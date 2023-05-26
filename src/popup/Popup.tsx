@@ -1,4 +1,4 @@
-import { faArrowsRotate, faEye, faEyeSlash, faSpinner, faTrashCan } from '@fortawesome/free-solid-svg-icons'
+import { faArrowsRotate, faEye, faEyeSlash, faPlus, faSpinner, faTrashCan } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import Button from '@src/components/Button'
 import AddLicense from '@src/components/EditLicense'
@@ -23,8 +23,20 @@ interface WrapperProps {
 
 const Wrapper = ({ children }: WrapperProps): JSX.Element => <div className='p-4 w-[42rem] text-[14px]'>{children}</div>
 
+const sendActiveTabMsg = async (msg: any): Promise<any> => {
+  const tabs = await browser.tabs.query({ active: true, currentWindow: true })
+  if (tabs.length < 1 || tabs[0].id === undefined) {
+    return
+  }
+  try {
+    return await browser.tabs.sendMessage(tabs[0].id, msg)
+  } catch (err) {
+    console.error('failed to send message to tab: ', err)
+  }
+}
+
 const Popup = (): JSX.Element => {
-  const [domains, setDomains] = useState<string[]>([])
+  const [whitelist, setWhitelist] = useState<string[]>([])
   const [imgs, setImgs] = useState<string[]>([])
   const [filterEnabled, setFilterEnabled] = useState(true)
   const [loading, setLoading] = useState(true)
@@ -33,6 +45,19 @@ const Popup = (): JSX.Element => {
   const [license, setLicense] = useState<string>('')
   const [licenseSaved, setLicenseSaved] = useState(false)
   const [editingLicense, setEditingLicense] = useState(false)
+  // const [showImages, setShowImages] = useState(true)
+
+  useEffect(() => {
+    const sendTestMsg = async (): Promise<void> => {
+      const tabs = await browser.tabs.query({ active: true, currentWindow: true })
+      if (tabs.length < 1 || tabs[0].id === undefined) {
+        return
+      }
+      void browser.tabs.sendMessage(tabs[0].id, 'hello world')
+    }
+
+    void sendTestMsg()
+  }, [])
 
   useEffect(() => {
     const fetchAppStorage = async (): Promise<AppStorage | null> => {
@@ -51,8 +76,8 @@ const Popup = (): JSX.Element => {
       return storage
     }
 
-    const updateAppStorage = async (storage: AppStorage): Promise<void> => {
-      setDomains(storage.domains)
+    const loadAppStorage = async (storage: AppStorage): Promise<void> => {
+      setWhitelist(storage.whitelist)
       setFilterEnabled(storage.filterEnabled)
 
       if (storage.licenseID !== undefined && storage.licenseID !== '') {
@@ -65,16 +90,16 @@ const Popup = (): JSX.Element => {
         if (tab?.id === undefined || tab?.url === undefined) {
           throw new Error('Current tab was undefined')
         }
-        const tabID = tab.id
 
         const currentHost = new URL(tab.url).host
-        if (storage.domains.includes(currentHost)) {
+        if (storage.whitelist.includes(currentHost)) {
           setSiteEnabled(true)
         }
 
-        if (storage.tabs[tabID] !== undefined && storage.filterEnabled && storage.domains.includes(currentHost)) {
-          setImgs(storage.tabs[tabID])
-        }
+        // const tabID = tab.id
+        // if (storage.tabs[tabID] !== undefined && storage.filterEnabled && storage.whitelist.includes(currentHost)) {
+        //   setImgs(storage.tabs[tabID])
+        // }
       } catch (err) {
 
       }
@@ -83,13 +108,51 @@ const Popup = (): JSX.Element => {
     const init = async (): Promise<void> => {
       const storage = await fetchAppStorage()
       if (storage !== null) {
-        console.log('here')
-        void updateAppStorage(storage)
+        void loadAppStorage(storage)
       }
     }
 
     void init()
   }, [])
+
+  const handleAddDomain = async (): Promise<void> => {
+    const tabs = await browser.tabs.query({ active: true, currentWindow: true })
+    if (tabs[0] === undefined || tabs[0].url === undefined) {
+      return
+    }
+    const url = new URL(tabs[0].url)
+    const host = url.host
+
+    if (whitelist.includes(host)) {
+      toast.error('Site is already added')
+      return
+    }
+
+    const nuWhitelist = whitelist.concat([url.host])
+    setWhitelist(nuWhitelist)
+
+    try {
+      await browser.storage.local.set({ whitelist: nuWhitelist })
+      void sendActiveTabMsg({ action: 'run filter' })
+    } catch (err) {
+      toast.error('something went wrong')
+      console.error('failed to set app storage: ', err)
+    }
+  }
+
+  // const onToggleShowImages = async (): Promise<void> => {
+  //   try {
+  //     const tabs = await browser.tabs.query({ active: true, currentWindow: true })
+  //     console.log(tabs)
+  //     const res = await browser.tabs.sendMessage(tabs[0].id ?? 0, { showImages: !showImages })
+  //     console.log(res)
+  //     if (res.didUpdate === true) {
+  //       setShowImages(!showImages)
+  //     }
+  //   } catch (err) {
+  //     console.error(err)
+  //   }
+  // }
 
   if (loading) {
     return (
@@ -121,7 +184,7 @@ const Popup = (): JSX.Element => {
   return (
     <Wrapper>
       <Toaster />
-      <div className='flex items-center justify-between mb-4'>
+      <div className='flex items-center gap-2 mb-4'>
         <Button
           className='flex text-lg gap-1 items-center cursor-pointer'
           onClick={() => {
@@ -151,6 +214,8 @@ const Popup = (): JSX.Element => {
             className={filterEnabled ? 'text-blue-500' : 'text-red-500'}
           />
         </Button>
+        {/* <Button onClick={() => { void onToggleShowImages() }}>{showImages ? 'Hide' : 'Show'} Images</Button> */}
+        {/* <Button onClick={() => onBlurImages()}>Blur Images</Button> */}
         <Button onClick={() => { setEditingLicense(true) }}>Edit License</Button>
       </div>
 
@@ -160,18 +225,18 @@ const Popup = (): JSX.Element => {
           Enabled Sites
         </Title>
         <div className='max-h-36 overflow-y-auto'>
-          {domains.length === 0
+          {whitelist.length === 0
             ? <p className='italic text-gray-600'>No websites are being filtered</p>
-            : domains.map((dom, i) =>
+            : whitelist.map((dom, i) =>
               <div key={i} className='flex items-center gap-2 mb-1'>
                 <FontAwesomeIcon
                   id='helpIcon'
                   icon={faTrashCan}
                   className='text-xl text-gray-400 cursor-pointer hover:text-red-400 transition-colors'
                   onClick={() => {
-                    const copyArr = [...domains]
+                    const copyArr = [...whitelist]
                     copyArr.splice(i, 1)
-                    setDomains(copyArr)
+                    setWhitelist(copyArr)
                     browser.storage.local.set({ domains: copyArr })
                       .then(() => {
                         toast.success('Site was removed')
@@ -189,17 +254,24 @@ const Popup = (): JSX.Element => {
       </section>
 
       {/* Filtered images */}
-      <section id='blocked-images-container'>
+      {/* <section id='blocked-images-container'>
         <Title>Filtered Images</Title>
         {imgs.length === 0
           ? <p className='italic text-gray-600'>No images being filtered</p>
           : imgs.map((img, i) =>
             <p key={i}>{img}</p>
           )}
-      </section>
+      </section> */}
 
       {/* Button row */}
-      <section className='flex justify-end'>
+      <section className='flex justify-between'>
+        <Button onClick={() => { void handleAddDomain() }}>
+          <div className='flex gap-2 items-center'>
+            <FontAwesomeIcon icon={faPlus} />
+            <span>Add this site</span>
+          </div>
+
+        </Button>
         {refreshVisible &&
           <button
             className='flex gap-2 items-center text-red-500 cursor-pointer border border-red-400 px-4 py-2 hover:bg-red-100 transition-colors'
@@ -210,7 +282,7 @@ const Popup = (): JSX.Element => {
                 .catch(err => console.error(err))
             }}
           >
-            <span>Refresh To Apply Changes</span>
+            <span>Refresh</span>
             <FontAwesomeIcon
               icon={faArrowsRotate}
               className='text-2xl'

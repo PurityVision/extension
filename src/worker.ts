@@ -9,8 +9,7 @@ export interface AppStorage {
   licenseID: string
   filterEnabled: boolean
   needsRefresh: boolean
-  domains: string[]
-  blacklist: string[]
+  whitelist: string[]
   tabs: {
     [tabID: number]: string[]
   }
@@ -19,8 +18,7 @@ export interface AppStorage {
 browser.storage.local.set({
   filterEnabled: true,
   needsRefresh: false,
-  domains: [],
-  blacklist: [],
+  whitelist: ['boards.4chan.org', 'boards.4channel.org'],
   tabs: {}
 })
   .catch(err => console.error(err))

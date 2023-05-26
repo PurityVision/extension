@@ -24,6 +24,9 @@ const AddLicense: React.FC<AddLicenseProps> = (
   const [isValid, setIsValid] = useState<boolean | undefined>()
 
   useEffect(() => {
+    if (license === '') {
+      return
+    }
     validateLicense(license)
       .then(isValid => setIsValid(isValid))
       .catch(err => { console.error(err) })

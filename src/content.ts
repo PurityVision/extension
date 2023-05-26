@@ -9,13 +9,27 @@ interface ImgFilterRes {
   reason: string
 }
 
+export interface HideImageMessage {
+  showImages: boolean
+}
+
+browser.runtime.onMessage.addListener((request: { action: string }) => {
+  switch (request.action) {
+    case 'run filter': {
+      console.log('New domain added. Running filter.')
+      void main()
+    }
+  }
+})
+
 const loadingTab = document.createElement('div')
 const body = document.querySelector('body')
 
-// document.addEventListener('readystatechange', (event) => {
-//   if (document.readyState === 'complete') {
-//   }
-// })
+// const impureImgs: HTMLImageElement[] = []
+// const pureImgs: HTMLImageElement[] = []
+
+// TODO imple
+// const showPageImages = (): void => { /* STUB */ }
 
 const displayLoadingTab = (): void => {
   loadingTab.id = 'loading-tab'
@@ -36,13 +50,6 @@ const removeLoadingTab = (): void => {
   body?.removeChild(loadingTab)
 }
 
-const isPageEnabled = (
-  { location, blacklist, whitelist }: { location: string, blacklist: string[], whitelist: string[] }
-): boolean => {
-  // TODO: add or switch to whitelist
-  return !blacklist.includes(location)
-}
-
 const testDomains = ['boards.4chan.org', 'boards.4channel.org', 'test.gradeycullins.com']
 
 export async function main (): Promise<void> {
@@ -52,17 +59,10 @@ export async function main (): Promise<void> {
     return
   }
 
-  const opts = {
-    location: window.location.hostname,
-    blacklist: storage.blacklist,
-    whitelist: []
-  }
-
-  if (!isPageEnabled(opts)) {
+  if (!storage.whitelist.includes(window.location.host)) {
     return
   }
 
-  // Test code. REMOVE
   if (!testDomains.includes(window.location.hostname)) {
     return
   }
@@ -103,13 +103,16 @@ async function filterPage (licenseID: string): Promise<any> {
   }
 }
 
+const hideImages = (imgs: HTMLImageElement[]): void => imgs.forEach(i => i.classList.add('blurred-img'))
+// const hidePageImages = (): void => hideImages(getPageImages())
+
 async function filterImgTags (imgs: HTMLImageElement[], license: string): Promise<any> {
   if (imgs.length === 0) {
     return
   }
 
   // Preemptively blur/filter images to avoid showing explicit content before API filter request completes.
-  imgs.forEach(i => i.classList.add('blurred-img'))
+  hideImages(imgs)
 
   const imgURIList = imgs.map(img => img.src)
 
@@ -131,7 +134,6 @@ async function filterImgTags (imgs: HTMLImageElement[], license: string): Promis
 
 const sendFilterMsg = async (res: ImgFilterRes[], imgs: HTMLImageElement[]): Promise<void> => {
   const filteredOutRes = res.filter(r => !r.pass)
-  console.log(filteredOutRes)
   const filteredImgURLs = imgs
     .filter(img => filteredOutRes.find(res => res.imgURI === img.src) !== undefined)
     .map(fi => fi.currentSrc)
