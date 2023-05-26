@@ -31,21 +31,21 @@ browser.storage.local.set({
 //     .catch(err => console.error('failed to fetch storage: ', err))
 // })
 
-// const updateBadge = (tabID: number, storage: AppStorage): void => {
-//   const tabState = storage.tabs[tabID]
-//   if (tabState !== undefined && storage.filterEnabled) {
-//     browser.action.setBadgeText({
-//       text: tabState.length.toString()
-//     }).catch(err => console.error(err))
-//     browser.action.setIcon({ path: '../logo.png' })
-//       .catch(err => console.error(err))
-//   } else {
-//     browser.action.setBadgeText({ text: '' })
-//       .catch(err => console.error(err))
-//     browser.action.setIcon({ path: '../logo-red.png' })
-//       .catch(err => console.error(err))
-//   }
-// }
+const updateBadge = (tabID: number, storage: AppStorage): void => {
+  const tabState = storage.tabs[tabID]
+  if (tabState !== undefined && storage.filterEnabled) {
+    browser.action.setBadgeText({
+      text: tabState.length.toString()
+    }).catch(err => console.error(err))
+    browser.action.setIcon({ path: '../logo.png' })
+      .catch(err => console.error(err))
+  } else {
+    browser.action.setBadgeText({ text: '' })
+      .catch(err => console.error(err))
+    browser.action.setIcon({ path: '../logo-red.png' })
+      .catch(err => console.error(err))
+  }
+}
 
 // browser.tabs.onActivated.addListener(info => {
 //   browser.storage.local.get()
@@ -65,7 +65,7 @@ browser.runtime.onMessage.addListener(async (req: ContentMessage) => {
   const storage = (await browser.storage.local.get()) as AppStorage
   storage.tabs[tab.id] = req.imgURLs
 
-  // updateBadge(tab.id, storage)
+  updateBadge(tab.id, storage)
 
   console.log('setting storage: ', storage)
   browser.storage.local.set(storage)
