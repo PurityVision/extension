@@ -1,4 +1,4 @@
-.blurred-img {
+.pv-impure-img {
     /* filter: blur(10px); */
     /* visibility: hidden; */
     display: none;
@@ -16,7 +16,7 @@
     color: #ff1818;
 }
 
-#loading-tab {
+#pv-loading-tab {
   display: flex;
   z-index: 9000;
   background-color: #ff9d9d;

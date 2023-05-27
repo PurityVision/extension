@@ -130,9 +130,11 @@ const Popup = (): JSX.Element => {
 
     const nuWhitelist = whitelist.concat([url.host])
     setWhitelist(nuWhitelist)
+    setFilterEnabled(true)
 
     try {
-      await browser.storage.local.set({ whitelist: nuWhitelist })
+      await browser.storage.local.set({ whitelist: nuWhitelist, filterEnabled: true })
+      setSiteEnabled(true)
       void sendActiveTabMsg({ action: 'run filter' })
     } catch (err) {
       toast.error('something went wrong')
@@ -153,6 +155,16 @@ const Popup = (): JSX.Element => {
   //     console.error(err)
   //   }
   // }
+
+  const handleToggleActive = (): void => {
+    const nextFilterState = !filterEnabled
+    setFilterEnabled(nextFilterState)
+    browser.storage.local
+      .set({ filterEnabled: nextFilterState })
+      .catch(() => {})
+
+    void sendActiveTabMsg({ action: nextFilterState ? 'run filter' : 'disable filter' })
+  }
 
   if (loading) {
     return (
@@ -186,24 +198,12 @@ const Popup = (): JSX.Element => {
       <Toaster />
       <div className='flex items-center gap-2 mb-4'>
         <Button
-          className='flex text-lg gap-1 items-center cursor-pointer'
-          onClick={() => {
-            // TODO: can all this go into a function?
-            const nextFilterState = !filterEnabled
-            setFilterEnabled(nextFilterState)
-            if (!nextFilterState) {
-              setImgs([])
-            }
-            setRefreshVisible(true)
-            browser.storage.local.set({ filterEnabled: nextFilterState })
-              .catch(() => {})
-
-            if (nextFilterState) {
-              toast.success('filter enabled')
-            } else {
-              toast.error('filter disabled')
-            }
-          }}
+          disabled={!siteEnabled}
+          className={`
+            flex text-lg gap-1 items-center cursor-pointer
+            ${!filterEnabled ? 'text-red-500 border-red-500 hover:bg-red-100' : ''}
+          `}
+          onClick={handleToggleActive}
         >
           <span className='font-bold select-none'>
             {filterEnabled ? 'ON' : 'OFF'}

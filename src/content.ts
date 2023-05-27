@@ -9,30 +9,31 @@ interface ImgFilterRes {
   reason: string
 }
 
-export interface HideImageMessage {
-  showImages: boolean
-}
-
 browser.runtime.onMessage.addListener((request: { action: string }) => {
   switch (request.action) {
-    case 'run filter': {
-      console.log('New domain added. Running filter.')
+    case 'run filter':
+      console.log('Running filter to hide bad images.')
       void main()
-    }
+      break
+    case 'disable filter':
+      console.log('Turning off filter and resetting HTML.')
+      showPageImages()
+      void browser.runtime.sendMessage({ imgURLs: [] })
+      break
   }
 })
 
-const loadingTab = document.createElement('div')
-const body = document.querySelector('body')
+const IMPURE_IMG_CLASS = 'pv-impure-img'
 
 // const impureImgs: HTMLImageElement[] = []
 // const pureImgs: HTMLImageElement[] = []
 
-// TODO imple
-// const showPageImages = (): void => { /* STUB */ }
+const showPageImages = (): void => { getPageImages().forEach(img => img.classList.remove(IMPURE_IMG_CLASS)) }
 
-const displayLoadingTab = (): void => {
-  loadingTab.id = 'loading-tab'
+const showLoadingTab = (): void => {
+  const body = document.querySelector('body')
+  const loadingTab = document.createElement('div')
+  loadingTab.id = 'pv-loading-tab'
   const loadingSpinner = document.createElement('div')
   loadingSpinner.classList.add('lds-dual-ring')
 
@@ -42,12 +43,10 @@ const displayLoadingTab = (): void => {
   loadingTab.appendChild(loadingSpinner)
   loadingTab.appendChild(loadingText)
   body?.appendChild(loadingTab)
-  // docLoadHandler()
-  //   .catch(err => console.error('Failed to run content script main function: ', err))
 }
 
-const removeLoadingTab = (): void => {
-  body?.removeChild(loadingTab)
+const hideLoadingTab = (): void => {
+  document.getElementById('pv-loading-tab')?.remove()
 }
 
 const testDomains = ['boards.4chan.org', 'boards.4channel.org', 'test.gradeycullins.com']
@@ -94,16 +93,16 @@ async function filterPage (licenseID: string): Promise<any> {
   const pageImages = getPageImages()
 
   try {
-    displayLoadingTab()
+    showLoadingTab()
     await filterImgTags(pageImages, licenseID)
   } catch (err) {
     console.error(err)
   } finally {
-    removeLoadingTab()
+    hideLoadingTab()
   }
 }
 
-const hideImages = (imgs: HTMLImageElement[]): void => imgs.forEach(i => i.classList.add('blurred-img'))
+const hideImages = (imgs: HTMLImageElement[]): void => imgs.forEach(i => i.classList.add(IMPURE_IMG_CLASS))
 // const hidePageImages = (): void => hideImages(getPageImages())
 
 async function filterImgTags (imgs: HTMLImageElement[], license: string): Promise<any> {
@@ -158,9 +157,13 @@ const showCleanImgs = (res: ImgFilterRes[], imgs: HTMLImageElement[]): void => {
   const passed = res.filter(r => r.pass)
   imgs
     .filter(img => passed.find(res => res.imgURI === img.src) !== undefined)
-    .forEach(i => { i.classList.remove('blurred-img') })
+    .forEach(i => { i.classList.remove(IMPURE_IMG_CLASS) })
 }
 
+const setupTabHTML = (): void => {
+}
+
+setupTabHTML()
 void main()
 
 // Take an img element and add/modify markup to mark the image as explicit.

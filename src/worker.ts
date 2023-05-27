@@ -16,7 +16,7 @@ export interface AppStorage {
 }
 
 browser.storage.local.set({
-  filterEnabled: true,
+  filterEnabled: false,
   needsRefresh: false,
   whitelist: ['boards.4chan.org', 'boards.4channel.org'],
   tabs: {}
@@ -75,6 +75,18 @@ browser.runtime.onMessage.addListener(async (req: ContentMessage) => {
 
   // browser.action.setBadgeText({ text: req.imgURLs.length.toString() })
   //   .catch(err => console.error(err))
+})
+
+browser.tabs.onActivated.addListener(info => {
+  getCurrentTab()
+    .then(async tab => {
+      if (tab?.id === undefined) {
+        return
+      }
+      const storage = (await browser.storage.local.get()) as AppStorage
+      updateBadge(tab.id, storage)
+    })
+    .catch(err => { console.error(err) })
 })
 
 // Listen for messages sent from other parts of the extension
