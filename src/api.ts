@@ -47,12 +47,12 @@ interface License {
   isValid: boolean
 }
 
-export async function getLicense (id: string): Promise<License | undefined> {
+export async function getLicense (id: string): Promise<[License | undefined, Error | undefined]> {
   const url = `${apiURL}/license/${id}`
   try {
     const res = await fetch(url, {})
-    return await res.json() as License
+    return [await res.json() as License, undefined]
   } catch (err) {
-    console.error('failed to fetch license: ', err)
+    return [undefined, err as Error]
   }
 }

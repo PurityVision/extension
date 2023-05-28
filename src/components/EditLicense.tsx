@@ -3,6 +3,7 @@ import Button from './Button'
 import { getLicense } from '@src/api'
 import { faCheckCircle, faXmarkCircle } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import toast, { Toaster } from 'react-hot-toast'
 
 interface AddLicenseProps {
   license: string
@@ -11,9 +12,20 @@ interface AddLicenseProps {
 }
 
 const validateLicense = async (licenseID: string): Promise<boolean> => {
-  const license = await getLicense(licenseID)
-  if (license === undefined) {
+  const [license, err] = await getLicense(licenseID)
+  if (err !== undefined) {
+    toast.error('Failed to reach Purity Vision API')
+    console.error('failed to fetch license: ', err)
     return false
+  }
+
+  if (license == null) {
+    toast.error('License was not found')
+    return false
+  }
+
+  if (!license.isValid) {
+    toast.error('License has expired or is invalid')
   }
   return license?.isValid
 }
@@ -34,6 +46,7 @@ const AddLicense: React.FC<AddLicenseProps> = (
 
   return (
     <div>
+      <Toaster />
       <h1 className='text-2xl font-bold'>Your License</h1>
       <p className='mb-4'>Enter your Purity Vision license</p>
       <form onSubmit={e => {
@@ -46,7 +59,10 @@ const AddLicense: React.FC<AddLicenseProps> = (
               onSaveLicense(license)
             }
           })
-          .catch(err => { console.error(err) })
+          .catch(err => {
+            console.error(err)
+            toast.error(err)
+          })
       }}
       >
         <label htmlFor='license-input' className='block'>License</label>

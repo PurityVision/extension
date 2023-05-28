@@ -1,7 +1,7 @@
-import { faArrowsRotate, faEye, faEyeSlash, faPlus, faSpinner, faTrashCan } from '@fortawesome/free-solid-svg-icons'
+import { faEye, faEyeSlash, faPlus, faSpinner, faTrashCan } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import Button from '@src/components/Button'
-import AddLicense from '@src/components/EditLicense'
+import EditLicense from '@src/components/EditLicense'
 import { getCurrentTab } from '@src/utils'
 import { AppStorage } from '@src/worker'
 import React, { ReactElement, ReactNode, useEffect, useState } from 'react'
@@ -41,7 +41,6 @@ const Popup = (): JSX.Element => {
   const [filterEnabled, setFilterEnabled] = useState(true)
   const [loading, setLoading] = useState(true)
   const [siteEnabled, setSiteEnabled] = useState(false)
-  const [refreshVisible, setRefreshVisible] = useState(false)
   const [license, setLicense] = useState<string>('')
   const [licenseSaved, setLicenseSaved] = useState(false)
   const [editingLicense, setEditingLicense] = useState(false)
@@ -157,6 +156,11 @@ const Popup = (): JSX.Element => {
   // }
 
   const handleToggleActive = (): void => {
+    if (!siteEnabled) {
+      toast.error('Add this site first')
+      return
+    }
+
     const nextFilterState = !filterEnabled
     setFilterEnabled(nextFilterState)
     browser.storage.local
@@ -177,7 +181,7 @@ const Popup = (): JSX.Element => {
   if (!licenseSaved || editingLicense) {
     return (
       <Wrapper>
-        <AddLicense
+        <EditLicense
           license={license}
           setLicense={setLicense}
           onSaveLicense={license => {
@@ -196,9 +200,8 @@ const Popup = (): JSX.Element => {
   return (
     <Wrapper>
       <Toaster />
-      <div className='flex items-center gap-2 mb-4'>
+      <div className='flex items-center justify-between gap-2 mb-4'>
         <Button
-          disabled={!siteEnabled}
           className={`
             flex text-lg gap-1 items-center cursor-pointer
             ${!filterEnabled ? 'text-red-500 border-red-500 hover:bg-red-100' : ''}
@@ -270,25 +273,7 @@ const Popup = (): JSX.Element => {
             <FontAwesomeIcon icon={faPlus} />
             <span>Add this site</span>
           </div>
-
         </Button>
-        {refreshVisible &&
-          <button
-            className='flex gap-2 items-center text-red-500 cursor-pointer border border-red-400 px-4 py-2 hover:bg-red-100 transition-colors'
-            onClick={() => {
-              window.close()
-              browser.tabs.reload()
-                .then(() => setRefreshVisible(false))
-                .catch(err => console.error(err))
-            }}
-          >
-            <span>Refresh</span>
-            <FontAwesomeIcon
-              icon={faArrowsRotate}
-              className='text-2xl'
-            />
-
-          </button>}
       </section>
     </Wrapper>
   )
