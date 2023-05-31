@@ -18,7 +18,7 @@ export interface AppStorage {
 browser.storage.local.set({
   filterEnabled: false,
   needsRefresh: false,
-  whitelist: ['boards.4chan.org', 'boards.4channel.org'],
+  whitelist: [],
   tabs: {}
 })
   .catch(err => console.error(err))

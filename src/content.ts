@@ -47,8 +47,6 @@ const hideLoadingTab = (): void => {
   document.getElementById('pv-loading-tab')?.remove()
 }
 
-const testDomains = ['boards.4chan.org', 'boards.4channel.org', 'test.gradeycullins.com']
-
 export async function main (): Promise<void> {
   const storage = await browser.storage.local.get() as AppStorage
 
@@ -57,10 +55,6 @@ export async function main (): Promise<void> {
   }
 
   if (!storage.whitelist.includes(window.location.host)) {
-    return
-  }
-
-  if (!testDomains.includes(window.location.hostname)) {
     return
   }
 
