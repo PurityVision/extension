@@ -17,7 +17,7 @@ browser.runtime.onMessage.addListener((request: { action: string }) => {
       break
     case 'disable filter':
       console.log('Turning off filter and resetting HTML.')
-      showPageImages()
+      showFilteredImages()
       void browser.runtime.sendMessage({ imgURLs: [] })
       break
   }
@@ -27,8 +27,6 @@ const IMPURE_IMG_CLASS = 'pv-impure-img'
 
 // const impureImgs: HTMLImageElement[] = []
 // const pureImgs: HTMLImageElement[] = []
-
-const showPageImages = (): void => { getPageImages().forEach(img => img.classList.remove(IMPURE_IMG_CLASS)) }
 
 const showLoadingTab = (): void => {
   const body = document.querySelector('body')
@@ -102,7 +100,34 @@ async function filterPage (licenseID: string): Promise<any> {
   }
 }
 
-const hideImages = (imgs: HTMLImageElement[]): void => imgs.forEach(i => i.classList.add(IMPURE_IMG_CLASS))
+const hideImage = (img: HTMLImageElement): void => {
+  img.classList.add(IMPURE_IMG_CLASS)
+  const size = img.width > img.height ? img.width : img.height
+  img.setAttribute('old-src', img.src)
+  img.setAttribute('old-size', `${img.width}:${img.height}`)
+  img.src = 'https://i.imgur.com/5UJ6Xgv.jpg'
+  img.width = size
+  img.height = size
+}
+
+const hideImages = (imgs: HTMLImageElement[]): void => imgs.forEach(i => hideImage(i))
+
+const showImage = (img: HTMLImageElement): void => {
+  console.log('showing image: ', img)
+  img.classList.remove(IMPURE_IMG_CLASS)
+  img.src = img.getAttribute('old-src') ?? ''
+  const split = img.getAttribute('old-size')?.split(':')
+  if (split === undefined) {
+    return
+  }
+  img.width = Number(split[0])
+  img.height = Number(split[1])
+}
+
+const showFilteredImages = (): void =>
+  document.querySelectorAll(`img.${IMPURE_IMG_CLASS}`).forEach(i => showImage(i as HTMLImageElement))
+
+// const showPageImages = (): void => { getPageImages().forEach(img => img.classList.remove(IMPURE_IMG_CLASS)) }
 // const hidePageImages = (): void => hideImages(getPageImages())
 
 async function filterImgTags (imgs: HTMLImageElement[], license: string): Promise<any> {
@@ -113,7 +138,7 @@ async function filterImgTags (imgs: HTMLImageElement[], license: string): Promis
   // Preemptively blur/filter images to avoid showing explicit content before API filter request completes.
   hideImages(imgs)
 
-  const imgURIList = imgs.map(img => img.src)
+  const imgURIList = imgs.map(img => img.getAttribute('old-src') as string)
 
   const res = await filterImages(imgURIList, license)
   if (res === undefined) {
@@ -134,7 +159,7 @@ async function filterImgTags (imgs: HTMLImageElement[], license: string): Promis
 const sendFilterMsg = async (res: ImgFilterRes[], imgs: HTMLImageElement[]): Promise<void> => {
   const filteredOutRes = res.filter(r => !r.pass)
   const filteredImgURLs = imgs
-    .filter(img => filteredOutRes.find(res => res.imgURI === img.src) !== undefined)
+    .filter(img => filteredOutRes.find(res => res.imgURI === img.getAttribute('old-src') as string) !== undefined)
     .map(fi => fi.currentSrc)
 
   console.log('PURITY VISION is hiding these images: ')
@@ -155,9 +180,10 @@ const sendFilterMsg = async (res: ImgFilterRes[], imgs: HTMLImageElement[]): Pro
 
 const showCleanImgs = (res: ImgFilterRes[], imgs: HTMLImageElement[]): void => {
   const passed = res.filter(r => r.pass)
+  console.log(passed)
   imgs
-    .filter(img => passed.find(res => res.imgURI === img.src) !== undefined)
-    .forEach(i => { i.classList.remove(IMPURE_IMG_CLASS) })
+    .filter(img => passed.find(res => res.imgURI === img.getAttribute('old-src') as string) !== undefined)
+    .forEach(i => showImage(i))
 }
 
 const setupTabHTML = (): void => {

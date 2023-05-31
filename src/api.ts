@@ -1,5 +1,4 @@
 declare const MODE: 'dev' | 'prod'
-declare const API_URL: string
 
 let apiURL: string
 
@@ -8,7 +7,7 @@ switch (MODE) {
     apiURL = 'http://localhost:8080'
     break
   case 'prod':
-    apiURL = API_URL
+    apiURL = 'https://api.purity.gradeycullins.com'
     break
   default:
     apiURL = 'http://localhost:8080'

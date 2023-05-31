@@ -37,13 +37,14 @@ const sendActiveTabMsg = async (msg: any): Promise<any> => {
 
 const Popup = (): JSX.Element => {
   const [whitelist, setWhitelist] = useState<string[]>([])
-  const [imgs, setImgs] = useState<string[]>([])
   const [filterEnabled, setFilterEnabled] = useState(true)
   const [loading, setLoading] = useState(true)
   const [siteEnabled, setSiteEnabled] = useState(false)
   const [license, setLicense] = useState<string>('')
   const [licenseSaved, setLicenseSaved] = useState(false)
   const [editingLicense, setEditingLicense] = useState(false)
+
+  // const [imgs, setImgs] = useState<string[]>([])
   // const [showImages, setShowImages] = useState(true)
 
   useEffect(() => {
@@ -222,6 +223,8 @@ const Popup = (): JSX.Element => {
         <Button onClick={() => { setEditingLicense(true) }}>Edit License</Button>
       </div>
 
+      {/* <img src='../purity-logo.jpg' /> */}
+
       {/* My filtered sites. */}
       <section className='mb-4'>
         <Title>
@@ -240,9 +243,10 @@ const Popup = (): JSX.Element => {
                     const copyArr = [...whitelist]
                     copyArr.splice(i, 1)
                     setWhitelist(copyArr)
-                    browser.storage.local.set({ domains: copyArr })
+                    browser.storage.local.set({ whitelist: copyArr })
                       .then(() => {
                         toast.success('Site was removed')
+                        void sendActiveTabMsg({ action: 'disable filter' })
                         setSiteEnabled(false)
                       })
                       .catch(err => console.error('failed to update domains in local storage: ', err))
