@@ -4,8 +4,8 @@
     "description": "Web Extension starter kit built with React, TypeScript, Tailwind CSS & Webpack",
     "main": "index.js",
     "scripts": {
-        "build": "MODE=prod webpack --config webpack.prod.js",
-        "dev": "MODE=dev webpack -w --config webpack.dev.js",
+        "build": "webpack --config webpack.prod.js",
+        "dev": "webpack -w --config webpack.dev.js",
         "test": "jest --config=jest.config.js",
         "lint": "standard",
         "storybook": "start-storybook -p 6006",
@@ -56,6 +56,7 @@
         "babel-loader": "^8.1.0",
         "copy-webpack-plugin": "^11.0.0",
         "css-loader": "^4.3.0",
+        "dotenv-webpack": "^8.0.1",
         "jest": "^26.5.3",
         "jest-css-modules": "^2.1.0",
         "postcss": "^8.4.5",

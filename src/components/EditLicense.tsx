@@ -33,7 +33,7 @@ const validateLicense = async (licenseID: string): Promise<boolean> => {
 const AddLicense: React.FC<AddLicenseProps> = (
   { license, setLicense, onSaveLicense }
 ): JSX.Element => {
-  const [isValid, setIsValid] = useState<boolean | undefined>()
+  const [isValid, setIsValid] = useState<boolean>(false)
 
   useEffect(() => {
     if (license === '') {
@@ -47,8 +47,17 @@ const AddLicense: React.FC<AddLicenseProps> = (
   return (
     <div>
       <Toaster />
-      <h1 className='text-2xl font-bold'>Your License</h1>
-      <p className='mb-4'>Enter your Purity Vision license</p>
+      <div className='mb-4'>
+        <h1 className='text-2xl font-bold'>Your License</h1>
+        <p>Enter your Purity Vision license</p>
+        <a
+          className='text-blue-400 underline'
+          href={process.env.LANDING_PAGE_URL}
+          target='_blank' rel='noreferrer'
+        >
+          Get your license
+        </a>
+      </div>
       <form onSubmit={e => {
         e.preventDefault()
         validateLicense(license)
@@ -76,7 +85,7 @@ const AddLicense: React.FC<AddLicenseProps> = (
           pattern='^[{]?[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}[}]?$'
           required
         />
-        {isValid === true
+        {isValid
           ? <FontAwesomeIcon icon={faCheckCircle} className='text-green-400' />
           : <FontAwesomeIcon icon={faXmarkCircle} className='text-red-400' />}
         <Button

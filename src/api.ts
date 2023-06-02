@@ -1,17 +1,7 @@
-declare const MODE: 'dev' | 'prod'
-
-let apiURL: string
-
-switch (MODE) {
-  case 'dev':
-    apiURL = 'http://localhost:8080'
-    break
-  case 'prod':
-    apiURL = 'https://api.purity.gradeycullins.com'
-    break
-  default:
-    apiURL = 'http://localhost:8080'
+if (process.env.API_URL === undefined) {
+  throw new Error('API_URL must be defined in production mode')
 }
+const apiURL = process.env.API_URL
 
 export async function filterImages (imgURIs: string[], license: string): Promise<Response | undefined> {
   const url = `${apiURL}/filter/batch`

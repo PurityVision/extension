@@ -1,7 +1,5 @@
 import React from 'react'
-import { Hello } from '@src/components/hello'
 import browser, { Tabs } from 'webextension-polyfill'
-import { Scroller } from '@src/components/scroller'
 import css from './styles.module.css'
 
 // Scripts to execute in current tab
@@ -58,18 +56,7 @@ export function Popup (): JSX.Element {
   // Renders the component tree
   return (
     <div className={css.popupContainer}>
-      <div className='mx-4 my-4'>
-        <Hello />
-        <hr />
-        <Scroller
-          onClickScrollTop={() => {
-            executeScript(scrollToTopPosition)
-          }}
-          onClickScrollBottom={() => {
-            executeScript(scrollToBottomPosition)
-          }}
-        />
-      </div>
+      <div className='mx-4 my-4' />
     </div>
   )
 }

@@ -1,6 +1,6 @@
 const path = require('path')
 const CopyPlugin = require('copy-webpack-plugin')
-const webpack = require('webpack')
+const Dotenv = require('dotenv-webpack')
 
 module.exports = {
   entry: {
@@ -57,9 +57,6 @@ module.exports = {
     new CopyPlugin({
       patterns: [{ from: '.', to: '../css', context: 'src/css' }]
     }),
-    new webpack.DefinePlugin({
-      MODE: JSON.stringify(process.env.MODE),
-      API_URL: JSON.stringify(process.env.API_URL)
-    })
+    new Dotenv()
   ]
 }
