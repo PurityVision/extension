@@ -6,7 +6,7 @@ module.exports = {
   entry: {
     worker: path.join(__dirname, 'src/worker.ts'),
     popup: path.join(__dirname, 'src/popup/index.tsx'),
-    content: path.join(__dirname, 'src/content.ts')
+    content: path.join(__dirname, 'src/content/index.tsx')
   },
   output: {
     path: path.join(__dirname, 'dist/js'),
@@ -42,6 +42,11 @@ module.exports = {
           },
           'postcss-loader'
         ]
+      },
+      // load images
+      {
+        test: /\.(png|svg|jpg|jpeg|gif)$/i,
+        type: 'asset/resource'
       }
     ]
   },
@@ -55,7 +60,10 @@ module.exports = {
   plugins: [
     // CSS copier
     new CopyPlugin({
-      patterns: [{ from: '.', to: '../css', context: 'src/css' }]
+      patterns: [
+        { from: '.', to: '../css', context: 'src/css' },
+        { from: '.', to: '../img', context: 'src/img' }
+      ]
     }),
     new Dotenv()
   ]

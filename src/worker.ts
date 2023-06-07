@@ -1,5 +1,4 @@
 import browser from 'webextension-polyfill'
-import { getCurrentTab } from './utils'
 
 export interface ContentMessage {
   imgURLs: string[]
@@ -8,6 +7,7 @@ export interface ContentMessage {
 export interface AppStorage {
   licenseID: string
   filterEnabled: boolean
+  panelVisible: boolean
   needsRefresh: boolean
   whitelist: string[]
   tabs: {
@@ -16,8 +16,10 @@ export interface AppStorage {
 }
 
 browser.storage.local.set({
+  licenseID: '',
   filterEnabled: false,
   needsRefresh: false,
+  panelVisible: true,
   whitelist: [],
   tabs: {}
 })
@@ -31,21 +33,21 @@ browser.storage.local.set({
 //     .catch(err => console.error('failed to fetch storage: ', err))
 // })
 
-const updateBadge = (tabID: number, storage: AppStorage): void => {
-  const tabState = storage.tabs[tabID]
-  if (tabState !== undefined && storage.filterEnabled) {
-    browser.action.setBadgeText({
-      text: tabState.length.toString()
-    }).catch(err => console.error(err))
-    browser.action.setIcon({ path: '../logo.png' })
-      .catch(err => console.error(err))
-  } else {
-    browser.action.setBadgeText({ text: '' })
-      .catch(err => console.error(err))
-    browser.action.setIcon({ path: '../logo-red.png' })
-      .catch(err => console.error(err))
-  }
-}
+// const updateBadge = (tabID: number, storage: AppStorage): void => {
+//   const tabState = storage.tabs[tabID]
+//   if (tabState !== undefined && storage.filterEnabled) {
+//     browser.action.setBadgeText({
+//       text: tabState.length.toString()
+//     }).catch(err => console.error(err))
+//     browser.action.setIcon({ path: '../logo.png' })
+//       .catch(err => console.error(err))
+//   } else {
+//     browser.action.setBadgeText({ text: '' })
+//       .catch(err => console.error(err))
+//     browser.action.setIcon({ path: '../logo-red.png' })
+//       .catch(err => console.error(err))
+//   }
+// }
 
 // browser.tabs.onActivated.addListener(info => {
 //   browser.storage.local.get()
@@ -56,38 +58,38 @@ const updateBadge = (tabID: number, storage: AppStorage): void => {
 //     .catch(err => { console.error('failed to get storage: ', err) })
 // })
 
-browser.runtime.onMessage.addListener(async (req: ContentMessage) => {
-  const tab = await getCurrentTab()
-  if (tab?.id === undefined) {
-    return
-  }
+// browser.runtime.onMessage.addListener(async (req: ContentMessage) => {
+//   const tab = await getCurrentTab()
+//   if (tab?.id === undefined) {
+//     return
+//   }
 
-  const storage = (await browser.storage.local.get()) as AppStorage
-  storage.tabs[tab.id] = req.imgURLs
+//   const storage = (await browser.storage.local.get()) as AppStorage
+//   storage.tabs[tab.id] = req.imgURLs
 
-  updateBadge(tab.id, storage)
+//   // updateBadge(tab.id, storage)
 
-  console.log('setting storage: ', storage)
-  browser.storage.local.set(storage)
-    .catch(err => console.error('failed to set storage: ', err))
+//   console.log('setting storage: ', storage)
+//   browser.storage.local.set(storage)
+//     .catch(err => console.error('failed to set storage: ', err))
 
-  // await browser.storage.local.set({ tabs: { [tab.id]: req.imgURLs } })
+//   // await browser.storage.local.set({ tabs: { [tab.id]: req.imgURLs } })
 
-  // browser.action.setBadgeText({ text: req.imgURLs.length.toString() })
-  //   .catch(err => console.error(err))
-})
+//   // browser.action.setBadgeText({ text: req.imgURLs.length.toString() })
+//   //   .catch(err => console.error(err))
+// })
 
-browser.tabs.onActivated.addListener(info => {
-  getCurrentTab()
-    .then(async tab => {
-      if (tab?.id === undefined) {
-        return
-      }
-      const storage = (await browser.storage.local.get()) as AppStorage
-      updateBadge(tab.id, storage)
-    })
-    .catch(err => { console.error(err) })
-})
+// browser.tabs.onActivated.addListener(info => {
+//   getCurrentTab()
+//     .then(async tab => {
+//       if (tab?.id === undefined) {
+//         return
+//       }
+//       const storage = (await browser.storage.local.get()) as AppStorage
+//       updateBadge(tab.id, storage)
+//     })
+//     .catch(err => { console.error(err) })
+// })
 
 // Listen for messages sent from other parts of the extension
 // browser.runtime.onMessage.addListener((request: { popupMounted: boolean }) => {

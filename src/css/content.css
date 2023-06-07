@@ -57,3 +57,11 @@
       transform: rotate(360deg);
     }
   }
+
+#license-input {
+  padding: 0.5rem 2rem 0.5rem 1rem !important;
+}
+
+#purity-extension-container {
+  font-size: 14px;
+}

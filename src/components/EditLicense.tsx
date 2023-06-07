@@ -1,14 +1,16 @@
-import React, { useEffect, useState } from 'react'
-import Button from './Button'
-import { getLicense } from '@src/api'
-import { faCheckCircle, faXmarkCircle } from '@fortawesome/free-solid-svg-icons'
+import { faCheckCircle, faX, faXmarkCircle } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import toast, { Toaster } from 'react-hot-toast'
+import { getLicense } from '@src/api'
+import React, { useEffect, useState } from 'react'
+import toast from 'react-hot-toast'
+import { styled } from 'styled-components'
+import { BlueButton } from './Button'
 
 interface AddLicenseProps {
   license: string
   setLicense: React.Dispatch<React.SetStateAction<string>>
   onSaveLicense: (license: string) => void
+  onCloseHandler: any
 }
 
 const validateLicense = async (licenseID: string): Promise<boolean> => {
@@ -30,8 +32,12 @@ const validateLicense = async (licenseID: string): Promise<boolean> => {
   return license?.isValid
 }
 
-const AddLicense: React.FC<AddLicenseProps> = (
-  { license, setLicense, onSaveLicense }
+const Wrapper = styled.div`
+  padding: 0 1rem 2rem 1rem;
+`
+
+const EditLicense: React.FC<AddLicenseProps> = (
+  { license, setLicense, onSaveLicense, onCloseHandler }
 ): JSX.Element => {
   const [isValid, setIsValid] = useState<boolean>(false)
 
@@ -45,11 +51,25 @@ const AddLicense: React.FC<AddLicenseProps> = (
   }, [])
 
   return (
-    <div>
-      <Toaster />
-      <div className='mb-4'>
-        <h1 className='text-2xl font-bold'>Your License</h1>
-        <p>Enter your Purity Vision license</p>
+    <Wrapper>
+      <div style={{ marginBottom: '1rem' }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between'
+          }}
+        >
+          <h2 style={{ marginBottom: '5px', marginTop: '5px' }}>Your License</h2>
+          <FontAwesomeIcon
+            icon={faX}
+            onClick={onCloseHandler}
+            style={{
+              cursor: 'pointer'
+            }}
+          />
+        </div>
+        <p style={{ marginTop: 0, marginBottom: '5px' }}>Enter your Purity Vision license</p>
         <a
           className='text-blue-400 underline'
           href={process.env.LANDING_PAGE_URL}
@@ -74,29 +94,45 @@ const AddLicense: React.FC<AddLicenseProps> = (
           })
       }}
       >
-        <label htmlFor='license-input' className='block'>License</label>
-        <input
-          type='text'
-          name='license'
-          id='license-input'
-          className='px-4 py-2 rounded border mb-2 mr-2 w-3/4'
-          value={license}
-          onChange={(e) => { setLicense(e.target.value) }}
-          pattern='^[{]?[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}[}]?$'
-          required
-        />
-        {isValid
-          ? <FontAwesomeIcon icon={faCheckCircle} className='text-green-400' />
-          : <FontAwesomeIcon icon={faXmarkCircle} className='text-red-400' />}
-        <Button
-          className='block'
+        <label htmlFor='license-input' style={{ display: 'block' }}>License</label>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <input
+            type='text'
+            name='license'
+            id='license-input'
+            value={license}
+            style={{ width: '100%' }}
+            onChange={(e) => { setLicense(e.target.value) }}
+            pattern='^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$'
+            required
+          />
+          {isValid
+            ? <FontAwesomeIcon
+                icon={faCheckCircle}
+                style={{
+                  color: 'green',
+                  transform: 'translateX(-2rem)'
+                }}
+              />
+            : <FontAwesomeIcon
+                icon={faXmarkCircle}
+                className='text-red-400'
+                style={{
+                  color: 'red',
+                  transform: 'translateX(-2rem)'
+                }}
+              />}
+
+        </div>
+        <BlueButton
+          style={{ display: 'block', marginTop: '1rem' }}
         >
           Save
-        </Button>
+        </BlueButton>
 
       </form>
-    </div>
+    </Wrapper>
   )
 }
 
-export default AddLicense
+export default EditLicense
