@@ -33,7 +33,7 @@ const validateLicense = async (licenseID: string): Promise<boolean> => {
 }
 
 const Wrapper = styled.div`
-  padding: 0 1rem 2rem 1rem;
+  padding: 0 14px 28px 14px;
 `
 
 const EditLicense: React.FC<AddLicenseProps> = (
@@ -48,11 +48,11 @@ const EditLicense: React.FC<AddLicenseProps> = (
     validateLicense(license)
       .then(isValid => setIsValid(isValid))
       .catch(err => { console.error(err) })
-  }, [])
+  }, [license])
 
   return (
     <Wrapper>
-      <div style={{ marginBottom: '1rem' }}>
+      <div style={{ marginBottom: '14px' }}>
         <div
           style={{
             display: 'flex',
@@ -65,6 +65,7 @@ const EditLicense: React.FC<AddLicenseProps> = (
             icon={faX}
             onClick={onCloseHandler}
             style={{
+              width: '8px',
               cursor: 'pointer'
             }}
           />
@@ -111,7 +112,8 @@ const EditLicense: React.FC<AddLicenseProps> = (
                 icon={faCheckCircle}
                 style={{
                   color: 'green',
-                  transform: 'translateX(-2rem)'
+                  width: '20px',
+                  transform: 'translateX(-28px)'
                 }}
               />
             : <FontAwesomeIcon
@@ -119,13 +121,14 @@ const EditLicense: React.FC<AddLicenseProps> = (
                 className='text-red-400'
                 style={{
                   color: 'red',
-                  transform: 'translateX(-2rem)'
+                  width: '20px',
+                  transform: 'translateX(-28px)'
                 }}
               />}
 
         </div>
         <BlueButton
-          style={{ display: 'block', marginTop: '1rem' }}
+          style={{ display: 'block', marginTop: '14px' }}
         >
           Save
         </BlueButton>

@@ -2,14 +2,14 @@ import { faCaretRight, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-ico
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import Button, { BlueButton, GreenButton, PulseButton, SecondaryButton } from '@src/components/Button'
 import EditLicense from '@src/components/EditLicense'
-import { Box, FlexBox, HoverFlexBox, Icon, SlideBox } from '@src/components/Helpers'
+import { Box, FlexBox, HoverFlexBox, Icon, SlideDown, SlideUp, SomeThing } from '@src/components/Helpers'
 import { COLORS, LOGO_B64 } from '@src/constants'
 import React, { useEffect, useState } from 'react'
 import toast, { Toaster } from 'react-hot-toast'
 import { styled } from 'styled-components'
-import browser from 'webextension-polyfill'
-import { filterPage, main, showFilteredImages } from '.'
-import { AppStorage } from '../worker'
+import browser, { Runtime } from 'webextension-polyfill'
+import { filterPage, showFilteredImages } from './filter'
+import { AppStorage, UpdatePanelVisibility } from '../worker'
 
 const ExtensionWrapper = styled.div`
   position: fixed;
@@ -20,20 +20,25 @@ const ExtensionWrapper = styled.div`
   z-index: 696969;
   margin: auto;
   max-width: 1054px;
+  font-size: 14px;
 `
+interface ExtensionContentProps {
+  readonly $panelVisible: boolean
+}
 
-const ExtensionContent = styled.div`
+const ExtensionContent = styled.div<ExtensionContentProps>`
   background-color: white;
   width: fit-content;
-  padding: 0.5rem;
+  padding: 7px;
   border-radius: 5px 5px 0 0;
   box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 30px;;
   border: 1px solid #c2c2c2;
+  animation: ${SlideUp} 1s ease-out forwards;
 `
 
 const ExtensionMenu = styled.div`
   display: flex;
-  gap: 1rem;
+  gap: 14px;
   align-items: stretch;
 `
 
@@ -42,6 +47,7 @@ const EditLicenseWrapper = styled.div<{ readonly $isVisible: boolean }>`
 `
 
 const Content = (): JSX.Element => {
+  const [panelVisible, setPanelVisible] = useState(true)
   const [expanded, setExpanded] = useState(false)
   const [filterEnabled, setFilterEnabled] = useState(true)
   const [whitelist, setWhitelist] = useState<string[]>([])
@@ -56,14 +62,16 @@ const Content = (): JSX.Element => {
       setFilterEnabled(storage.filterEnabled)
       setWhitelist(storage.whitelist)
       setLicense(storage.licenseID)
+      setPanelVisible(storage.panelVisible)
 
       if (storage.licenseID === '') {
-        // TODO: show or indicate UI for user to enter UI
+        setExpanded(true)
+        setEditingLicense(true)
         return
       }
 
       if (storage.filterEnabled && storage.whitelist.includes(window.location.host)) {
-        void filterPage(license)
+        void filterPage(storage.licenseID)
       } else {
         showFilteredImages()
       }
@@ -76,7 +84,38 @@ const Content = (): JSX.Element => {
     if (!expanded) setEditingLicense(false)
   }, [expanded])
 
+  useEffect(() => {
+    const listener = (msg: UpdatePanelVisibility, sender: Runtime.MessageSender): void => {
+      setPanelVisible(msg.visible)
+    }
+
+    browser.runtime.onMessage.addListener(listener)
+
+    return () => {
+      browser.runtime.onMessage.removeListener(listener)
+    }
+  }, [])
+
+  useEffect(() => {
+    const listener = (changes: browser.Storage.StorageAreaOnChangedChangesType): void => {
+      if ('panelVisible' in changes) {
+        setPanelVisible(changes.panelVisible.newValue)
+      }
+    }
+
+    browser.storage.local.onChanged.addListener(listener)
+
+    return () => {
+      browser.storage.local.onChanged.removeListener(listener)
+    }
+  }, [])
+
   const handleToggleFilter = async (): Promise<void> => {
+    if (license === '') {
+      toast.error('Add a valid license first')
+      return
+    }
+
     if (!whitelist.includes(window.location.host)) {
       toast.error('Add this site first', { position: 'bottom-right' })
       return
@@ -88,7 +127,7 @@ const Content = (): JSX.Element => {
     setFilterEnabled(next)
 
     if (next) {
-      void main()
+      void filterPage(storage.licenseID)
     } else {
       showFilteredImages()
     }
@@ -99,6 +138,11 @@ const Content = (): JSX.Element => {
   }
 
   const handleAddDomain = async (): Promise<void> => {
+    if (license === '') {
+      toast.error('Add a valid license first')
+      return
+    }
+
     if (whitelist.includes(window.location.host)) {
       toast.error('Site is already added')
       return
@@ -109,7 +153,7 @@ const Content = (): JSX.Element => {
     setFilterEnabled(true)
 
     try {
-      await main()
+      await filterPage(license)
       await browser.storage.local.set({ whitelist: nuWhitelist, filterEnabled: true })
     } catch (err) {
       toast.error('something went wrong')
@@ -121,7 +165,7 @@ const Content = (): JSX.Element => {
     if (filterEnabled) {
       return (
         <BlueButton onClick={() => { void handleToggleFilter() }}>
-          <div style={{ display: 'flex', gap: '0.25rem', justifyItems: 'center', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: '3.5px', justifyItems: 'center', alignItems: 'center' }}>
             <span>ON</span>
             <FontAwesomeIcon
               icon={faEyeSlash}
@@ -132,7 +176,7 @@ const Content = (): JSX.Element => {
     } else {
       return (
         <Button onClick={() => { void handleToggleFilter() }}>
-          <div style={{ display: 'flex', gap: '0.25rem', justifyItems: 'center', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: '5px', justifyItems: 'center', alignItems: 'center' }}>
             <span>OFF</span>
             <FontAwesomeIcon
               icon={faEye}
@@ -143,31 +187,15 @@ const Content = (): JSX.Element => {
     }
   }
 
-  function licenseButton (): JSX.Element {
-    if (license === '') {
-      return (
-        <PulseButton
-          onClick={() => setEditingLicense(!editingLicense)}
-        >
-          ADD LICENSE
-        </PulseButton>
-      )
-    } else {
-      return (
-        <SecondaryButton
-          onClick={() => setEditingLicense(!editingLicense)}
-        >
-          EDIT LICENSE
-        </SecondaryButton>
-      )
-    }
+  if (!panelVisible) {
+    return <></>
   }
 
   return (
     <>
       <Toaster />
       <ExtensionWrapper id='purity-extension-container'>
-        <ExtensionContent>
+        <ExtensionContent $panelVisible={panelVisible}>
           <EditLicenseWrapper $isVisible={editingLicense}>
             <EditLicense
               license={license}
@@ -185,7 +213,7 @@ const Content = (): JSX.Element => {
           </EditLicenseWrapper>
           <ExtensionMenu>
             <Box
-              $padding='0 0 0 0.5rem'
+              $padding='0 0 0 7px'
             >
               <a href={process.env.LANDING_PAGE_URL} target='_blank' rel='noreferrer'>
                 <img
@@ -204,16 +232,21 @@ const Content = (): JSX.Element => {
                 >
                   ADD THIS SITE
                 </GreenButton>
-                {licenseButton()}
+                <SecondaryButton
+                  onClick={() => setEditingLicense(!editingLicense)}
+                >
+                  EDIT LICENSE
+                </SecondaryButton>
               </FlexBox>}
             <HoverFlexBox
-              $padding='0 1rem 0 1rem'
+              $padding='0 14px 0 14px'
               $hoverColor={COLORS.lightGray}
               $borderRadius='5px'
               onClick={() => setExpanded(!expanded)}
             >
               <Icon
                 icon={faCaretRight}
+                style={{ width: '14px' }}
                 rotation={expanded ? 180 : undefined}
               />
             </HoverFlexBox>

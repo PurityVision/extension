@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { keyframes, styled } from 'styled-components'
+import { css, keyframes, styled } from 'styled-components'
 
 interface BoxProps {
   readonly $padding?: string
@@ -85,6 +85,37 @@ interface SlideBoxProps {
 }
 
 export const SlideBox = styled(Box)<SlideBoxProps>`
-  width: ${props => props.$isExpanded ? '100%' : 0 };
+  width: ${props => props.$isExpanded ? '100%' : 0};
   animation: ${SlideOut} 2s ease-out forwards;
+`
+
+const SomeStyles = css`
+  margin-top: 10px;
+`
+
+export const SomeThing = styled.div`
+  ${SomeStyles}
+  margin-bottom: 20px;
+`
+
+export const SlideUp = keyframes`
+  0% {
+    transform: translateY(60px);
+  }
+
+  100% {
+    transform: none;
+  }
+  
+`
+
+export const SlideDown = keyframes`
+  0% {
+    transform: none;
+  }
+
+  100% {
+    transform: translateY(60px);
+  }
+  
 `

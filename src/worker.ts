@@ -4,6 +4,10 @@ export interface ContentMessage {
   imgURLs: string[]
 }
 
+export interface UpdatePanelVisibility {
+  visible: boolean
+}
+
 export interface AppStorage {
   licenseID: string
   filterEnabled: boolean

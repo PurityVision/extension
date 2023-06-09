@@ -1,3 +1,4 @@
+import { COLORS } from '@src/constants'
 import { styled } from 'styled-components'
 
 // const primaryStyles = 'text-blue-800 border-blue-800 hover:bg-blue-100 transition-colors'
@@ -8,7 +9,7 @@ const Button = styled.button`
   cursor: pointer;
   border-radius: 3px;
   border: none;
-  padding: 0.5rem 1rem 0.5rem 1rem;
+  padding: 7px 14px 7px 14px;
   color: white;
 
   &:hover {
@@ -17,7 +18,7 @@ const Button = styled.button`
 `
 
 export const BlueButton = styled(Button)`
-  background: #3574ff;
+  background: ${COLORS.blue};
 
   &:hover {
     background: #7ea6ff;
@@ -25,7 +26,7 @@ export const BlueButton = styled(Button)`
 `
 
 export const GreenButton = styled(Button)`
-  background: #49c026;
+  background: ${COLORS.green};
 
   &:hover {
     background: #81bd6f;
@@ -46,13 +47,11 @@ export const SecondaryButton = styled(Button)`
 export const PulseButton = styled(SecondaryButton)`
   @keyframes bounce {
       0%,to {
-          transform: translateY(-10%);
           animation-timing-function: cubic-bezier(.8,0,1,1)
       }
 
       50% {
-          transform: none;
-          background-color: red;
+          background-color: ${COLORS.red};
           animation-timing-function: cubic-bezier(0,0,.2,1)
       }
   }

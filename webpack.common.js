@@ -42,11 +42,6 @@ module.exports = {
           },
           'postcss-loader'
         ]
-      },
-      // load images
-      {
-        test: /\.(png|svg|jpg|jpeg|gif)$/i,
-        type: 'asset/resource'
       }
     ]
   },
@@ -61,8 +56,7 @@ module.exports = {
     // CSS copier
     new CopyPlugin({
       patterns: [
-        { from: '.', to: '../css', context: 'src/css' },
-        { from: '.', to: '../img', context: 'src/img' }
+        { from: '.', to: '../css', context: 'src/css' }
       ]
     }),
     new Dotenv()
