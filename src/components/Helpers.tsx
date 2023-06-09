@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { styled } from 'styled-components'
+import { keyframes, styled } from 'styled-components'
 
 interface BoxProps {
   readonly $padding?: string
@@ -53,4 +53,38 @@ export const HoverFlexBox = styled(FlexBox)<HoverFlexBoxProps>`
   &:hover {
     background-color: ${props => props.$hoverColor !== undefined ? props.$hoverColor : ''}
   }
+`
+
+// @keyframes bounce {
+//     0%,to {
+//         transform: translateY(-10%);
+//         animation-timing-function: cubic-bezier(.8,0,1,1)
+//     }
+
+//     50% {
+//         transform: none;
+//         background-color: red;
+//         animation-timing-function: cubic-bezier(0,0,.2,1)
+//     }
+// }
+
+// animation: bounce 1s infinite;
+// animation-duration: 1s;
+
+export const SlideOut = keyframes`
+  0% {
+    width: 0;
+  }
+  100% {
+    width: 100%;
+  }
+`
+
+interface SlideBoxProps {
+  readonly $isExpanded: boolean
+}
+
+export const SlideBox = styled(Box)<SlideBoxProps>`
+  width: ${props => props.$isExpanded ? '100%' : 0 };
+  animation: ${SlideOut} 2s ease-out forwards;
 `

@@ -2,7 +2,7 @@ import { faCaretRight, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-ico
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import Button, { BlueButton, GreenButton, PulseButton, SecondaryButton } from '@src/components/Button'
 import EditLicense from '@src/components/EditLicense'
-import { Box, FlexBox, HoverFlexBox, Icon } from '@src/components/Helpers'
+import { Box, FlexBox, HoverFlexBox, Icon, SlideBox } from '@src/components/Helpers'
 import { COLORS, LOGO_B64 } from '@src/constants'
 import React, { useEffect, useState } from 'react'
 import toast, { Toaster } from 'react-hot-toast'
@@ -37,7 +37,9 @@ const ExtensionMenu = styled.div`
   align-items: stretch;
 `
 
-const EditLicenseWrapper = styled.div``
+const EditLicenseWrapper = styled.div<{ readonly $isVisible: boolean }>`
+  display: ${props => props.$isVisible ? 'block' : 'none'};
+`
 
 const Content = (): JSX.Element => {
   const [expanded, setExpanded] = useState(false)
@@ -123,7 +125,6 @@ const Content = (): JSX.Element => {
             <span>ON</span>
             <FontAwesomeIcon
               icon={faEyeSlash}
-              className={filterEnabled ? 'text-blue-500' : 'text-red-500'}
             />
           </div>
         </BlueButton>
@@ -135,7 +136,6 @@ const Content = (): JSX.Element => {
             <span>OFF</span>
             <FontAwesomeIcon
               icon={faEye}
-              className={filterEnabled ? 'text-blue-500' : 'text-red-500'}
             />
           </div>
         </Button>
@@ -168,26 +168,24 @@ const Content = (): JSX.Element => {
       <Toaster />
       <ExtensionWrapper id='purity-extension-container'>
         <ExtensionContent>
-          {editingLicense &&
-            <EditLicenseWrapper>
-              <EditLicense
-                license={license}
-                setLicense={setLicense}
-                onSaveLicense={license => {
-                  browser.storage.local.set({ licenseID: license })
-                    .then(() => {
-                      setLicenseSaved(true)
-                      setEditingLicense(false)
-                    })
-                    .catch(err => { console.error(err) })
-                }}
-                onCloseHandler={() => setEditingLicense(false)}
-              />
-            </EditLicenseWrapper>}
+          <EditLicenseWrapper $isVisible={editingLicense}>
+            <EditLicense
+              license={license}
+              setLicense={setLicense}
+              onSaveLicense={license => {
+                browser.storage.local.set({ licenseID: license })
+                  .then(() => {
+                    setLicenseSaved(true)
+                    setEditingLicense(false)
+                  })
+                  .catch(err => { console.error(err) })
+              }}
+              onCloseHandler={() => setEditingLicense(false)}
+            />
+          </EditLicenseWrapper>
           <ExtensionMenu>
             <Box
               $padding='0 0 0 0.5rem'
-              className='p-3 hover:bg-gray-200 transition-colors rounded-tl-md cursor-pointer'
             >
               <a href={process.env.LANDING_PAGE_URL} target='_blank' rel='noreferrer'>
                 <img
@@ -202,7 +200,6 @@ const Content = (): JSX.Element => {
               <FlexBox $gap='10px'>
                 {filterButton()}
                 <GreenButton
-                  className='uppercase'
                   onClick={() => { void handleAddDomain() }}
                 >
                   ADD THIS SITE
@@ -216,7 +213,6 @@ const Content = (): JSX.Element => {
               onClick={() => setExpanded(!expanded)}
             >
               <Icon
-                className={`text-3xl cursor-pointer text-gray-700 hover:text-gray-400 transition-colors ${expanded ? 'rotate-180' : ''}`}
                 icon={faCaretRight}
                 rotation={expanded ? 180 : undefined}
               />
