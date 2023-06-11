@@ -3,6 +3,7 @@ import { AppStorage } from '@src/worker'
 import React, { useEffect, useState } from 'react'
 import { styled } from 'styled-components'
 import browser from 'webextension-polyfill'
+import Switch from '@mui/material/Switch'
 
 const Wrapper = styled.div`
   padding: 2rem;
@@ -10,7 +11,7 @@ const Wrapper = styled.div`
 `
 
 const Popup = (): JSX.Element => {
-  const [panelVisible, setPanelVisible] = useState(false)
+  const [panelVisible, setPanelVisible] = useState(true)
 
   useEffect(() => {
     const init = async (): Promise<void> => {
@@ -37,14 +38,12 @@ const Popup = (): JSX.Element => {
   return (
     <Wrapper>
       <FlexBox $gap='10px' style={{ alignItems: 'center' }}>
-        <label htmlFor='show-controls-toggle'>Show Control Panel?</label>
-        <input
+        <label htmlFor='pv-toggle-panel'>Show Control Panel?</label>
+        <Switch
+          id='pv-toggle-panel'
           checked={panelVisible}
           onChange={handleChangeVisible}
-          type='checkbox'
-          id='show-controls-toggle'
         />
-
       </FlexBox>
     </Wrapper>
   )

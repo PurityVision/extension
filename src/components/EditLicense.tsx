@@ -1,10 +1,12 @@
 import { faCheckCircle, faX, faXmarkCircle } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { Button as MButton } from '@mui/material'
+import Link from '@mui/material/Link'
 import { getLicense } from '@src/api'
+import { COLORS } from '@src/constants'
 import React, { useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
 import { styled } from 'styled-components'
-import { BlueButton } from './Button'
 
 interface AddLicenseProps {
   license: string
@@ -33,7 +35,8 @@ const validateLicense = async (licenseID: string): Promise<boolean> => {
 }
 
 const Wrapper = styled.div`
-  padding: 0 14px 28px 14px;
+  padding: 14px;
+  border-bottom: 1px solid ${COLORS.lightGray};
 `
 
 const EditLicense: React.FC<AddLicenseProps> = (
@@ -71,13 +74,9 @@ const EditLicense: React.FC<AddLicenseProps> = (
           />
         </div>
         <p style={{ marginTop: 0, marginBottom: '5px' }}>Enter your Purity Vision license</p>
-        <a
-          className='text-blue-400 underline'
-          href={process.env.LANDING_PAGE_URL}
-          target='_blank' rel='noreferrer'
-        >
+        <Link href={process.env.LANDING_PAGE_URL} target='_blank' rel='noreferrer'>
           Get your license
-        </a>
+        </Link>
       </div>
       <form onSubmit={e => {
         e.preventDefault()
@@ -127,12 +126,16 @@ const EditLicense: React.FC<AddLicenseProps> = (
               />}
 
         </div>
-        <BlueButton
-          style={{ display: 'block', marginTop: '14px' }}
+        <MButton
+          variant='contained'
+          color='primary'
+          sx={{
+            marginTop: '14px'
+          }}
+          type='submit'
         >
-          Save
-        </BlueButton>
-
+          SAVE
+        </MButton>
       </form>
     </Wrapper>
   )

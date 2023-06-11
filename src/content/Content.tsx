@@ -1,15 +1,15 @@
 import { faCaretRight, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import Button, { BlueButton, GreenButton, PulseButton, SecondaryButton } from '@src/components/Button'
+import { Button as MButton } from '@mui/material'
 import EditLicense from '@src/components/EditLicense'
-import { Box, FlexBox, HoverFlexBox, Icon, SlideDown, SlideUp, SomeThing } from '@src/components/Helpers'
+import { Box, FlexBox, HoverFlexBox, Icon, SlideUp } from '@src/components/Helpers'
 import { COLORS, LOGO_B64 } from '@src/constants'
 import React, { useEffect, useState } from 'react'
 import toast, { Toaster } from 'react-hot-toast'
 import { styled } from 'styled-components'
 import browser, { Runtime } from 'webextension-polyfill'
-import { filterPage, showFilteredImages } from './filter'
 import { AppStorage, UpdatePanelVisibility } from '../worker'
+import { filterPage, showFilteredImages } from './filter'
 
 const ExtensionWrapper = styled.div`
   position: fixed;
@@ -29,7 +29,6 @@ interface ExtensionContentProps {
 const ExtensionContent = styled.div<ExtensionContentProps>`
   background-color: white;
   width: fit-content;
-  padding: 7px;
   border-radius: 5px 5px 0 0;
   box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 30px;;
   border: 1px solid #c2c2c2;
@@ -38,6 +37,7 @@ const ExtensionContent = styled.div<ExtensionContentProps>`
 
 const ExtensionMenu = styled.div`
   display: flex;
+  padding: 14px 7px;
   gap: 14px;
   align-items: stretch;
 `
@@ -164,25 +164,32 @@ const Content = (): JSX.Element => {
   function filterButton (): JSX.Element {
     if (filterEnabled) {
       return (
-        <BlueButton onClick={() => { void handleToggleFilter() }}>
-          <div style={{ display: 'flex', gap: '3.5px', justifyItems: 'center', alignItems: 'center' }}>
-            <span>ON</span>
+        <MButton
+          onClick={() => { void handleToggleFilter() }}
+          variant='contained'
+          endIcon={
             <FontAwesomeIcon
               icon={faEyeSlash}
             />
-          </div>
-        </BlueButton>
+          }
+        >
+          ON
+        </MButton>
       )
     } else {
       return (
-        <Button onClick={() => { void handleToggleFilter() }}>
-          <div style={{ display: 'flex', gap: '5px', justifyItems: 'center', alignItems: 'center' }}>
-            <span>OFF</span>
+        <MButton
+          onClick={() => { void handleToggleFilter() }}
+          variant='contained'
+          color='error'
+          endIcon={
             <FontAwesomeIcon
               icon={faEye}
             />
-          </div>
-        </Button>
+          }
+        >
+          OFF
+        </MButton>
       )
     }
   }
@@ -193,7 +200,7 @@ const Content = (): JSX.Element => {
 
   return (
     <>
-      <Toaster />
+      <Toaster position='bottom-right' />
       <ExtensionWrapper id='purity-extension-container'>
         <ExtensionContent $panelVisible={panelVisible}>
           <EditLicenseWrapper $isVisible={editingLicense}>
@@ -227,16 +234,17 @@ const Content = (): JSX.Element => {
             {expanded &&
               <FlexBox $gap='10px'>
                 {filterButton()}
-                <GreenButton
+                <MButton
                   onClick={() => { void handleAddDomain() }}
                 >
                   ADD THIS SITE
-                </GreenButton>
-                <SecondaryButton
+                </MButton>
+                <MButton
+                  variant='outlined'
                   onClick={() => setEditingLicense(!editingLicense)}
                 >
                   EDIT LICENSE
-                </SecondaryButton>
+                </MButton>
               </FlexBox>}
             <HoverFlexBox
               $padding='0 14px 0 14px'

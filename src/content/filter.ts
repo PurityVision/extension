@@ -29,6 +29,7 @@ export async function filterPage (licenseID: string): Promise<any> {
   try {
     await filterImgTags(pageImages, licenseID)
   } catch (err) {
+    showFilteredImages()
     console.error(err)
   }
 }
