@@ -1,12 +1,11 @@
 import { faCheckCircle, faX, faXmarkCircle } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { Button as MButton } from '@mui/material'
-import Link from '@mui/material/Link'
+import { Link, Button as MButton } from '@mui/material'
 import { getLicense } from '@src/api'
 import { COLORS } from '@src/constants'
 import React, { useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
-import { styled } from 'styled-components'
+import styled from '@emotion/styled'
 
 interface AddLicenseProps {
   license: string
@@ -14,6 +13,12 @@ interface AddLicenseProps {
   onSaveLicense: (license: string) => void
   onCloseHandler: any
 }
+
+const OLink = styled(Link)`
+  &:visited, &:hover {
+    color: ${COLORS.blue} !important;
+  }
+`
 
 const validateLicense = async (licenseID: string): Promise<boolean> => {
   const [license, err] = await getLicense(licenseID)
@@ -74,9 +79,7 @@ const EditLicense: React.FC<AddLicenseProps> = (
           />
         </div>
         <p style={{ marginTop: 0, marginBottom: '5px' }}>Enter your Purity Vision license</p>
-        <Link href={process.env.LANDING_PAGE_URL} target='_blank' rel='noreferrer'>
-          Get your license
-        </Link>
+        <OLink href={process.env.LANDING_PAGE_URL} target='_blank' rel='noreferrer'>Get a License</OLink>
       </div>
       <form onSubmit={e => {
         e.preventDefault()

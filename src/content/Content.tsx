@@ -6,7 +6,7 @@ import { Box, FlexBox, HoverFlexBox, Icon, SlideUp } from '@src/components/Helpe
 import { COLORS, LOGO_B64 } from '@src/constants'
 import React, { useEffect, useState } from 'react'
 import toast, { Toaster } from 'react-hot-toast'
-import { styled } from 'styled-components'
+import styled from '@emotion/styled'
 import browser, { Runtime } from 'webextension-polyfill'
 import { AppStorage, UpdatePanelVisibility } from '../worker'
 import { filterPage, showFilteredImages } from './filter'
@@ -21,6 +21,7 @@ const ExtensionWrapper = styled.div`
   margin: auto;
   max-width: 1054px;
   font-size: 14px;
+  font-family: arial,helvetica,sans-serif;
 `
 interface ExtensionContentProps {
   readonly $panelVisible: boolean

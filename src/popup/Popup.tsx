@@ -1,13 +1,17 @@
 import { FlexBox } from '@src/components/Helpers'
 import { AppStorage } from '@src/worker'
 import React, { useEffect, useState } from 'react'
-import { styled } from 'styled-components'
+import styled from '@emotion/styled'
 import browser from 'webextension-polyfill'
 import Switch from '@mui/material/Switch'
 
 const Wrapper = styled.div`
   padding: 2rem;
   width: 220px;
+`
+
+const Title = styled.h1`
+  font-size: 20px;
 `
 
 const Popup = (): JSX.Element => {
@@ -37,6 +41,7 @@ const Popup = (): JSX.Element => {
 
   return (
     <Wrapper>
+      <Title>Purity Vision Settings</Title>
       <FlexBox $gap='10px' style={{ alignItems: 'center' }}>
         <label htmlFor='pv-toggle-panel'>Show Control Panel?</label>
         <Switch

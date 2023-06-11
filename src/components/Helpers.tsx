@@ -1,5 +1,6 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { css, keyframes, styled } from 'styled-components'
+import { css, keyframes } from '@emotion/react'
+import styled from '@emotion/styled'
 
 interface BoxProps {
   readonly $padding?: string
