@@ -13,11 +13,7 @@ export async function filterImages (imgURIs: string[], license: string): Promise
     }
   }
 
-  try {
-    return await fetch(url, opts)
-  } catch (err) {
-    console.error('failed to fetch: ', err)
-  }
+  return await fetch(url, opts)
 }
 
 export async function health (): Promise<Response | undefined> {

@@ -1,11 +1,12 @@
 import { faCheckCircle, faX, faXmarkCircle } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { Link, Button as MButton } from '@mui/material'
+import { Link } from '@mui/material'
 import { getLicense } from '@src/api'
 import { COLORS } from '@src/constants'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast'
 import styled from '@emotion/styled'
+import { Button } from '@src/components/Button'
 
 interface AddLicenseProps {
   license: string
@@ -20,10 +21,17 @@ const OLink = styled(Link)`
   }
 `
 
+const LicenseInput = styled.input`
+  padding: 10px !important;
+  background-color: white !important;
+  border: 1px solid ${COLORS.gray} !important;
+  border-radius: 5px !important;
+`
+
 const validateLicense = async (licenseID: string): Promise<boolean> => {
   const [license, err] = await getLicense(licenseID)
   if (err !== undefined) {
-    toast.error('Failed to reach Purity Vision API')
+    toast.error('Something went wrong')
     console.error('failed to fetch license: ', err)
     return false
   }
@@ -48,9 +56,13 @@ const EditLicense: React.FC<AddLicenseProps> = (
   { license, setLicense, onSaveLicense, onCloseHandler }
 ): JSX.Element => {
   const [isValid, setIsValid] = useState<boolean>(false)
+  const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (license === '') {
+      return
+    }
+    if (inputRef !== null && inputRef.current?.validity.valid === false) {
       return
     }
     validateLicense(license)
@@ -99,8 +111,9 @@ const EditLicense: React.FC<AddLicenseProps> = (
       >
         <label htmlFor='license-input' style={{ display: 'block' }}>License</label>
         <div style={{ display: 'flex', alignItems: 'center' }}>
-          <input
+          <LicenseInput
             type='text'
+            ref={inputRef}
             name='license'
             id='license-input'
             value={license}
@@ -114,7 +127,7 @@ const EditLicense: React.FC<AddLicenseProps> = (
                 icon={faCheckCircle}
                 style={{
                   color: 'green',
-                  width: '20px',
+                  fontSize: '20px',
                   transform: 'translateX(-28px)'
                 }}
               />
@@ -123,13 +136,13 @@ const EditLicense: React.FC<AddLicenseProps> = (
                 className='text-red-400'
                 style={{
                   color: 'red',
-                  width: '20px',
+                  fontSize: '20px',
                   transform: 'translateX(-28px)'
                 }}
               />}
 
         </div>
-        <MButton
+        <Button
           variant='contained'
           color='primary'
           sx={{
@@ -138,7 +151,7 @@ const EditLicense: React.FC<AddLicenseProps> = (
           type='submit'
         >
           SAVE
-        </MButton>
+        </Button>
       </form>
     </Wrapper>
   )

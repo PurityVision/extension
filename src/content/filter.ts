@@ -71,14 +71,10 @@ async function filterImgTags (imgs: HTMLImageElement[], license: string): Promis
   const imgURIList = imgs.map(img => img.getAttribute('old-src') as string)
 
   const res = await filterImages(imgURIList, license)
-  if (res === undefined) {
-    console.error('failed to fetch')
-    return
+  if (res === undefined || res.status !== 200) {
+    throw new Error('failed to fetch')
   }
-  if (res.status !== 200) {
-    console.error(`Failed to get response from API with status ${res.status}`)
-    return
-  }
+
   const filterRes = await res.json() as ImgFilterRes[]
 
   // await sendFilterMsg(filterRes, imgs)

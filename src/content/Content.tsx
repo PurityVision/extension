@@ -1,12 +1,12 @@
+import styled from '@emotion/styled'
 import { faCaretRight, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { Button as MButton } from '@mui/material'
+import { Button } from '@src/components/Button'
 import EditLicense from '@src/components/EditLicense'
 import { Box, FlexBox, HoverFlexBox, Icon, SlideUp } from '@src/components/Helpers'
 import { COLORS, LOGO_B64 } from '@src/constants'
 import React, { useEffect, useState } from 'react'
 import toast, { Toaster } from 'react-hot-toast'
-import styled from '@emotion/styled'
 import browser, { Runtime } from 'webextension-polyfill'
 import { AppStorage, UpdatePanelVisibility } from '../worker'
 import { filterPage, showFilteredImages } from './filter'
@@ -19,9 +19,9 @@ const ExtensionWrapper = styled.div`
   bottom: 0;
   z-index: 696969;
   margin: auto;
-  max-width: 1054px;
-  font-size: 14px;
-  font-family: arial,helvetica,sans-serif;
+  max-width: 1054px !important;
+  font-size: 14px !important;
+  font-family: arial,helvetica,sans-serif !important;
 `
 interface ExtensionContentProps {
   readonly $panelVisible: boolean
@@ -165,7 +165,7 @@ const Content = (): JSX.Element => {
   function filterButton (): JSX.Element {
     if (filterEnabled) {
       return (
-        <MButton
+        <Button
           onClick={() => { void handleToggleFilter() }}
           variant='contained'
           endIcon={
@@ -175,11 +175,11 @@ const Content = (): JSX.Element => {
           }
         >
           ON
-        </MButton>
+        </Button>
       )
     } else {
       return (
-        <MButton
+        <Button
           onClick={() => { void handleToggleFilter() }}
           variant='contained'
           color='error'
@@ -190,7 +190,7 @@ const Content = (): JSX.Element => {
           }
         >
           OFF
-        </MButton>
+        </Button>
       )
     }
   }
@@ -235,17 +235,17 @@ const Content = (): JSX.Element => {
             {expanded &&
               <FlexBox $gap='10px'>
                 {filterButton()}
-                <MButton
+                <Button
                   onClick={() => { void handleAddDomain() }}
                 >
                   ADD THIS SITE
-                </MButton>
-                <MButton
+                </Button>
+                <Button
                   variant='outlined'
                   onClick={() => setEditingLicense(!editingLicense)}
                 >
                   EDIT LICENSE
-                </MButton>
+                </Button>
               </FlexBox>}
             <HoverFlexBox
               $padding='0 14px 0 14px'
