@@ -6,7 +6,7 @@ import browser from 'webextension-polyfill'
 import Switch from '@mui/material/Switch'
 
 const Wrapper = styled.div`
-  padding: 2rem;
+  padding: 10px 20px;
   width: 220px;
 `
 

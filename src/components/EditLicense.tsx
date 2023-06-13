@@ -137,6 +137,7 @@ const EditLicense: React.FC<AddLicenseProps> = (
                 style={{
                   color: 'red',
                   fontSize: '20px',
+                  width: '20px',
                   transform: 'translateX(-28px)'
                 }}
               />}

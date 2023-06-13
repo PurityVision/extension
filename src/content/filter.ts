@@ -18,7 +18,7 @@ function getPageImages (): HTMLImageElement[] {
     .filter((img: HTMLImageElement) => img.id !== 'purity-vision-panel-logo')
 }
 
-export async function filterPage (licenseID: string): Promise<any> {
+export async function filterPage (licenseID: string): Promise<string[]> {
   console.log('running Purity filter')
 
   const pageImages = getPageImages()
@@ -27,10 +27,11 @@ export async function filterPage (licenseID: string): Promise<any> {
   hideImages(pageImages)
 
   try {
-    await filterImgTags(pageImages, licenseID)
+    return await filterImgTags(pageImages, licenseID)
   } catch (err) {
     showFilteredImages()
     console.error(err)
+    return []
   }
 }
 
@@ -63,9 +64,9 @@ export const showFilteredImages = (): void =>
 // const showPageImages = (): void => { getPageImages().forEach(img => img.classList.remove(IMPURE_IMG_CLASS)) }
 // const hidePageImages = (): void => hideImages(getPageImages())
 
-async function filterImgTags (imgs: HTMLImageElement[], license: string): Promise<any> {
+async function filterImgTags (imgs: HTMLImageElement[], license: string): Promise<string[]> {
   if (imgs.length === 0) {
-    return
+    return []
   }
 
   const imgURIList = imgs.map(img => img.getAttribute('old-src') as string)
@@ -80,6 +81,10 @@ async function filterImgTags (imgs: HTMLImageElement[], license: string): Promis
   // await sendFilterMsg(filterRes, imgs)
 
   showCleanImgs(filterRes, imgs)
+
+  return filterRes
+    .filter(r => !r.pass)
+    .map(r => r.imgURI)
 }
 
 const showCleanImgs = (res: ImgFilterRes[], imgs: HTMLImageElement[]): void => {

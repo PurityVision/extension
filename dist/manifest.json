@@ -25,11 +25,13 @@
       "matches": [
         "<all_urls>"
       ],
+      "run_at": "document_end",
       "js": [
         "js/content.js"
       ],
       "css": [
-        "css/content.css"
+        "css/content.css",
+        "css/normalize.css"
       ]
     }
   ]
