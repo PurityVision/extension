@@ -7,6 +7,36 @@ export interface ImgFilterRes {
   reason: string
 }
 
+enum Likelihood {
+  // Unknown likelihood.
+  Likelihood_UNKNOWN = 0,
+  // It is very unlikely.
+  Likelihood_VERY_UNLIKELY = 1,
+  // It is unlikely.
+  Likelihood_UNLIKELY = 2,
+  // It is possible.
+  Likelihood_POSSIBLE = 3,
+  // It is likely.
+  Likelihood_LIKELY = 4,
+  // It is very likely.
+  Likelihood_VERY_LIKELY = 5
+}
+
+export interface ImageAnnotation {
+  hash: string
+  uri: string
+  error: {
+    'string': string
+    valid: boolean
+  }
+  dateAdded: string
+  adult: Likelihood
+  spoof: Likelihood
+  medical: Likelihood
+  violence: Likelihood
+  racy: Likelihood
+}
+
 const IMPURE_IMG_CLASS = 'pv-impure-img'
 
 // const impureImgs: HTMLImageElement[] = []
@@ -76,22 +106,49 @@ async function filterImgTags (imgs: HTMLImageElement[], license: string): Promis
     throw new Error('failed to fetch')
   }
 
-  const filterRes = await res.json() as ImgFilterRes[]
+  const imageAnnotations = await res.json() as ImageAnnotation[]
 
-  // await sendFilterMsg(filterRes, imgs)
+  //await sendFilterMsg(imageAnnotations, imgs)
 
-  showCleanImgs(filterRes, imgs)
+  const failedAnnotations = showCleanImgs(imageAnnotations, imgs)
 
-  return filterRes
-    .filter(r => !r.pass)
-    .map(r => r.imgURI)
+  return failedAnnotations.map(anno => anno.uri)
 }
 
-const showCleanImgs = (res: ImgFilterRes[], imgs: HTMLImageElement[]): void => {
-  const passed = res.filter(r => r.pass)
+const isAnnotationSafe = (annotation: ImageAnnotation): boolean => {
+  if (annotation.adult >= Likelihood.Likelihood_LIKELY) {
+    return false
+  }
+
+  if (annotation.medical >= Likelihood.Likelihood_LIKELY) {
+    return false
+  }
+
+  if (annotation.violence >= Likelihood.Likelihood_LIKELY) {
+    return false
+  }
+
+  if (annotation.violence >= Likelihood.Likelihood_VERY_LIKELY) {
+    return false
+  }
+
+  if (annotation.racy >= Likelihood.Likelihood_LIKELY) {
+    return false
+  }
+
+  return true
+}
+
+// Impure side-effects function.
+const showCleanImgs = (annotations: ImageAnnotation[], imgs: HTMLImageElement[]): ImageAnnotation[] => {
+  const passed = annotations.filter(a => isAnnotationSafe(a))
+  const failed = annotations.filter(a => !isAnnotationSafe(a))
+
   imgs
-    .filter(img => passed.find(res => res.imgURI === img.getAttribute('old-src') as string) !== undefined)
+    .filter(img => passed.find(anno => anno.uri === img.getAttribute('old-src') as string) !== undefined)
     .forEach(i => showImage(i))
+
+  return failed
 }
 
 // const sendFilterMsg = async (res: ImgFilterRes[], imgs: HTMLImageElement[]): Promise<void> => {

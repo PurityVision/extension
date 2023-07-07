@@ -15,7 +15,7 @@ const Title = styled.h1`
 `
 
 const Popup = (): JSX.Element => {
-  const [panelVisible, setPanelVisible] = useState(true)
+  const [panelVisible, setPanelVisible] = useState(false)
 
   useEffect(() => {
     const init = async (): Promise<void> => {
