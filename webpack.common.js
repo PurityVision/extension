@@ -55,7 +55,8 @@ module.exports = {
     // CSS copier
     new CopyPlugin({
       patterns: [
-        { from: '.', to: '../css', context: 'src/css' }
+        { from: '.', to: '../css', context: 'src/css' },
+	{ from: './popup.html', to: '../', context: 'src/popup' }
       ]
     })
   ]

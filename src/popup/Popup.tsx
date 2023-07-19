@@ -16,10 +16,12 @@ const Title = styled.h1`
 
 const Popup = (): JSX.Element => {
   const [panelVisible, setPanelVisible] = useState(false)
+  const [isLoaded, setIsLoaded] = useState(false)
 
   useEffect(() => {
     const init = async (): Promise<void> => {
       const storage = await browser.storage.local.get() as AppStorage
+      setIsLoaded(true)
       setPanelVisible(storage.panelVisible)
     }
     void init()
@@ -42,14 +44,14 @@ const Popup = (): JSX.Element => {
   return (
     <Wrapper>
       <Title>Purity Vision Settings</Title>
-      <FlexBox $gap='10px' style={{ alignItems: 'center' }}>
+      {isLoaded && <FlexBox $gap='10px' style={{ alignItems: 'center' }}>
         <label htmlFor='pv-toggle-panel'>Show Control Panel?</label>
         <Switch
           id='pv-toggle-panel'
           checked={panelVisible}
           onChange={handleChangeVisible}
         />
-      </FlexBox>
+      </FlexBox>}
     </Wrapper>
   )
 }
