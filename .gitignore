@@ -4,9 +4,4 @@ node_modules/
 .log/
 .DS_Store
 .env.production
-dist/js
-dist/css
-dist/img
-dist/popup.html
-dist/main.js
-dist/*.png
+dist/
