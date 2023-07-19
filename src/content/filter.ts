@@ -1,4 +1,4 @@
-import { filterImages } from '@src/api'
+import { annotateImages } from '@src/api'
 
 export interface ImgFilterRes {
   imgURI: string
@@ -43,23 +43,38 @@ const IMPURE_IMG_CLASS = 'pv-impure-img'
 // const pureImgs: HTMLImageElement[] = []
 
 // TODO: get imgs from other sources like background-image
-function getPageImages (): HTMLImageElement[] {
+function getPageImages(): HTMLImageElement[] {
   return [].slice.call(document.getElementsByTagName('img'))
     .filter((img: HTMLImageElement) => img.id !== 'purity-vision-panel-logo')
 }
 
-export async function filterPage (licenseID: string): Promise<string[]> {
-  console.log('running Purity filter')
+interface FilterOpts {
+  licenseID: string
+  wholePage?: boolean
+  images?: HTMLImageElement[]
+}
 
-  const pageImages = getPageImages()
+export async function runFilter({
+  licenseID,
+  wholePage = true,
+  images,
+}: FilterOpts): Promise<string[]> {
+  console.log('running Purity filter')
+  if (!wholePage && !images) {
+    throw new Error('opts.wholePage and opts.images cannot both be undefined')
+  }
+
+  if (wholePage || images === undefined) {
+    images = getPageImages()
+  }
 
   // Preemptively blur/filter images to avoid showing explicit content before API filter request completes.
-  hideImages(pageImages)
+  hideImages(images)
 
   try {
-    return await filterImgTags(pageImages, licenseID)
+    return await filterImgTags(images, licenseID)
   } catch (err) {
-    showFilteredImages()
+    showFilteredImages(images)
     console.error(err)
     return []
   }
@@ -67,41 +82,48 @@ export async function filterPage (licenseID: string): Promise<string[]> {
 
 const hideImage = (img: HTMLImageElement): void => {
   img.classList.add(IMPURE_IMG_CLASS)
-  const size = img.width > img.height ? img.width : img.height
-  img.setAttribute('old-src', img.src)
-  img.setAttribute('old-size', `${img.width}:${img.height}`)
-  img.src = 'https://i.imgur.com/tmtD11P.png'
-  img.width = size
-  img.height = size
+  //const size = img.width > img.height ? img.width : img.height
+  //img.setAttribute('old-src', img.src)
+  //img.setAttribute('old-size', `${img.width}:${img.height}`)
+  //img.src = 'https://i.imgur.com/tmtD11P.png'
+  //img.src = 'https://i.imgur.com/67VE1Lr.gif'
+  //img.width = size
+  //img.height = size
 }
 
 const hideImages = (imgs: HTMLImageElement[]): void => imgs.forEach(i => hideImage(i))
 
 const showImage = (img: HTMLImageElement): void => {
   img.classList.remove(IMPURE_IMG_CLASS)
-  img.src = img.getAttribute('old-src') ?? ''
-  const split = img.getAttribute('old-size')?.split(':')
-  if (split === undefined) {
-    return
-  }
-  img.width = Number(split[0])
-  img.height = Number(split[1])
+  //img.src = img.getAttribute('old-src') ?? ''
+  //const split = img.getAttribute('old-size')?.split(':')
+  //if (split === undefined) {
+  //  return
+  //}
+  //img.width = Number(split[0])
+  //img.height = Number(split[1])
 }
 
-export const showFilteredImages = (): void =>
-  document.querySelectorAll(`img.${IMPURE_IMG_CLASS}`).forEach(i => showImage(i as HTMLImageElement))
+export const showFilteredImages = (images?: HTMLImageElement[]): void => {
+  if (images !== undefined) {
+    images.forEach(i => showImage(i as HTMLImageElement))
+  } else {
+    document.querySelectorAll(`img.${IMPURE_IMG_CLASS}`).forEach(i => showImage(i as HTMLImageElement))
+  }
+}
 
 // const showPageImages = (): void => { getPageImages().forEach(img => img.classList.remove(IMPURE_IMG_CLASS)) }
 // const hidePageImages = (): void => hideImages(getPageImages())
 
-async function filterImgTags (imgs: HTMLImageElement[], license: string): Promise<string[]> {
+async function filterImgTags(imgs: HTMLImageElement[], license: string): Promise<string[]> {
   if (imgs.length === 0) {
     return []
   }
 
-  const imgURIList = imgs.map(img => img.getAttribute('old-src') as string)
+  // const imgURIList = imgs.map(img => img.getAttribute('old-src') as string)
+  const imgURIs = imgs.map(img => img.src)
 
-  const res = await filterImages(imgURIList, license)
+  const res = await annotateImages(imgURIs, license)
   if (res === undefined || res.status !== 200) {
     throw new Error('failed to fetch')
   }
@@ -128,11 +150,7 @@ const isAnnotationSafe = (annotation: ImageAnnotation): boolean => {
     return false
   }
 
-  if (annotation.violence >= Likelihood.Likelihood_VERY_LIKELY) {
-    return false
-  }
-
-  if (annotation.racy >= Likelihood.Likelihood_LIKELY) {
+  if (annotation.racy >= Likelihood.Likelihood_POSSIBLE) {
     return false
   }
 
@@ -145,7 +163,7 @@ const showCleanImgs = (annotations: ImageAnnotation[], imgs: HTMLImageElement[])
   const failed = annotations.filter(a => !isAnnotationSafe(a))
 
   imgs
-    .filter(img => passed.find(anno => anno.uri === img.getAttribute('old-src') as string) !== undefined)
+    .filter(img => passed.find(anno => anno.uri === img.src) !== undefined)
     .forEach(i => showImage(i))
 
   return failed

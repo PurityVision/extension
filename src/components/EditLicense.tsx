@@ -7,6 +7,10 @@ import React, { useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast'
 import styled from '@emotion/styled'
 import { Button } from '@src/components/Button'
+import IconButton from '@mui/material/IconButton'
+import CloseIcon from '@mui/icons-material/Close'
+import CheckCircleIcon from '@mui/icons-material/CheckCircle'
+import CancelIcon from '@mui/icons-material/Cancel'
 
 interface AddLicenseProps {
   license: string
@@ -26,6 +30,10 @@ const LicenseInput = styled.input`
   background-color: white !important;
   border: 1px solid ${COLORS.gray} !important;
   border-radius: 5px !important;
+`
+
+const LicenseInputLabel = styled.label`
+  margin-bottom: 0.5rem;
 `
 
 const validateLicense = async (licenseID: string): Promise<boolean> => {
@@ -81,14 +89,9 @@ const EditLicense: React.FC<AddLicenseProps> = (
           }}
         >
           <h2 style={{ marginBottom: '5px', marginTop: '5px' }}>Your License</h2>
-          <FontAwesomeIcon
-            icon={faX}
-            onClick={onCloseHandler}
-            style={{
-              width: '8px',
-              cursor: 'pointer'
-            }}
-          />
+          <IconButton onClick={onCloseHandler}>
+            <CloseIcon />
+          </IconButton>
         </div>
         <p style={{ marginTop: 0, marginBottom: '5px' }}>Enter your Purity Vision license</p>
         <OLink href={process.env.LANDING_PAGE_URL} target='_blank' rel='noreferrer'>Get a License</OLink>
@@ -109,7 +112,7 @@ const EditLicense: React.FC<AddLicenseProps> = (
           })
       }}
       >
-        <label htmlFor='license-input' style={{ display: 'block' }}>License</label>
+        <LicenseInputLabel htmlFor='license-input' style={{ display: 'block' }}>License</LicenseInputLabel>
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <LicenseInput
             type='text'
@@ -123,24 +126,24 @@ const EditLicense: React.FC<AddLicenseProps> = (
             required
           />
           {isValid
-            ? <FontAwesomeIcon
-                icon={faCheckCircle}
-                style={{
-                  color: 'green',
-                  fontSize: '20px',
-                  transform: 'translateX(-28px)'
-                }}
-              />
-            : <FontAwesomeIcon
-                icon={faXmarkCircle}
-                className='text-red-400'
-                style={{
-                  color: 'red',
-                  fontSize: '20px',
-                  width: '20px',
-                  transform: 'translateX(-28px)'
-                }}
-              />}
+            ? <CheckCircleIcon
+              style={{
+                color: 'green',
+                transform: 'translateX(-28px)',
+                position: 'fixed',
+                right: 0
+              }}
+            />
+
+            : <CancelIcon
+              className='text-red-400'
+              style={{
+                color: 'red',
+                transform: 'translateX(-28px)',
+                position: 'fixed',
+                right: 0
+              }}
+            />}
 
         </div>
         <Button
@@ -154,7 +157,7 @@ const EditLicense: React.FC<AddLicenseProps> = (
           SAVE
         </Button>
       </form>
-    </Wrapper>
+    </Wrapper >
   )
 }
 

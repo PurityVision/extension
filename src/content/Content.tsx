@@ -1,25 +1,29 @@
 import styled from '@emotion/styled'
-import { faCaretRight, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons'
+import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos'
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
+import { IconButton } from '@mui/material'
 import { Button } from '@src/components/Button'
 import EditLicense from '@src/components/EditLicense'
-import { Box, FlexBox, HoverFlexBox, Icon, SlideUp } from '@src/components/Helpers'
-import { COLORS, LOGO_B64 } from '@src/constants'
+import { FlexBox, IconContainer, SlideUp } from '@src/components/Helpers'
+import MenuStatus, { MenuStatusState } from '@src/components/MenuStatus'
+import { LOGO_B64 } from '@src/constants'
 import React, { useEffect, useState } from 'react'
 import toast, { Toaster } from 'react-hot-toast'
 import browser, { Runtime } from 'webextension-polyfill'
 import { AppStorage, UpdatePanelVisibility } from '../worker'
-import { filterPage, showFilteredImages } from './filter'
-import MenuStatus, { MenuStatusState } from '@src/components/MenuStatus'
+import { runFilter, showFilteredImages } from './filter'
 
 const ExtensionWrapper = styled.div`
+  width: fit-content;
   position: fixed;
   color: #434343;
   left: 0;
   right: 0;
   bottom: 0;
   z-index: 696969;
-  margin: auto;
+  margin: 0 0 0 1rem;
   max-width: 1054px !important;
   font-size: 14px !important;
   font-family: arial,helvetica,sans-serif !important;
@@ -32,9 +36,9 @@ const ExtensionContent = styled.div<ExtensionContentProps>`
   background-color: white;
   width: fit-content;
   border-radius: 5px 5px 0 0;
-  box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 30px;;
+  box-shadow: rgb(0 0 0 / 29%) 0px 11px 15px 13px;
   border: 1px solid #c2c2c2;
-  animation: ${SlideUp} 1s ease-out forwards;
+  animation: ${SlideUp} 0.5s ease-out forwards;
 `
 
 const ExtensionMenu = styled.div`
@@ -59,6 +63,45 @@ const Content = (): JSX.Element => {
   const [filterStatus, setFilterStatus] = useState<MenuStatusState>('off')
   const [filteredImgs, setFilteredImgs] = useState<string[]>([])
 
+  //useEffect(() => {
+  //  if (license === '') {
+  //    return
+  //  }
+
+  //  async function handleChange(changes: MutationRecord[], obs: MutationObserver) {
+  //    const images: HTMLImageElement[] = []
+
+  //    for (const change of changes) {
+  //      if (change.addedNodes.length > 0) {
+  //        for (let i = 0; i < change.addedNodes.length; i++) {
+  //          if (change.addedNodes[i].nodeName === 'IMG') {
+  //            const image = change.addedNodes[i] as HTMLImageElement
+  //            // console.log('need to filter: ', img)
+  //            images.push(image)
+  //          }
+  //        }
+  //        const opts = {
+  //          licenseID: license,
+  //          wholePage: false,
+  //          images
+  //        }
+
+  //        await filterPage(opts)
+  //      }
+  //    }
+  //  }
+
+  //  const obs = new MutationObserver(handleChange)
+  //  const opts = {
+  //    childList: true,
+  //    subtree: true,
+  //  }
+  //  obs.observe(document.body, opts);
+
+  //  return () => obs.disconnect()
+  //})
+
+
   useEffect(() => {
     const init = async (): Promise<void> => {
       const storage = await browser.storage.local.get() as AppStorage
@@ -80,7 +123,11 @@ const Content = (): JSX.Element => {
 
       if (storage.filterEnabled && storage.whitelist.includes(window.location.host)) {
         setFilterStatus('loading')
-        setFilteredImgs(await filterPage(storage.licenseID))
+        const opts = {
+          licenseID: storage.licenseID,
+          wholePage: true
+        }
+        setFilteredImgs(await runFilter(opts))
         setFilterStatus('active')
       }
     }
@@ -136,7 +183,11 @@ const Content = (): JSX.Element => {
 
     if (next) {
       setFilterStatus('loading')
-      setFilteredImgs(await filterPage(storage.licenseID))
+      const opts = {
+        licenseID: storage.licenseID,
+        wholePage: true
+      }
+      setFilteredImgs(await runFilter(opts))
       setFilterStatus('active')
     } else {
       setFilterStatus('off')
@@ -145,7 +196,7 @@ const Content = (): JSX.Element => {
 
     browser.storage.local
       .set({ filterEnabled: next })
-      .catch(() => {})
+      .catch(() => { })
   }
 
   const handleAddDomain = async (): Promise<void> => {
@@ -165,7 +216,11 @@ const Content = (): JSX.Element => {
 
     try {
       setFilterStatus('loading')
-      setFilteredImgs(await filterPage(license))
+      const opts = {
+        licenseID: license,
+        wholePage: true
+      }
+      setFilteredImgs(await runFilter(opts))
       setFilterStatus('active')
       await browser.storage.local.set({ whitelist: nuWhitelist, filterEnabled: true })
     } catch (err) {
@@ -188,7 +243,7 @@ const Content = (): JSX.Element => {
       .catch(err => console.error(err))
   }
 
-  function filterButton (): JSX.Element {
+  function filterButton(): JSX.Element {
     if (filterEnabled) {
       return (
         <Button
@@ -221,7 +276,7 @@ const Content = (): JSX.Element => {
     }
   }
 
-  function whitelistButton (): JSX.Element {
+  function whitelistButton(): JSX.Element {
     if (whitelist.includes(window.location.host)) {
       return (
         <Button
@@ -263,7 +318,7 @@ const Content = (): JSX.Element => {
           />
         </EditLicenseWrapper>
         <ExtensionMenu>
-          <Box
+          <IconContainer
             $padding='0 0 0 7px'
           >
             <a href={process.env.LANDING_PAGE_URL} target='_blank' rel='noreferrer'>
@@ -274,7 +329,7 @@ const Content = (): JSX.Element => {
                 style={{ height: '35px', verticalAlign: 'middle' }}
               />
             </a>
-          </Box>
+          </IconContainer>
           <MenuStatus state={filterStatus} count={filteredImgs.length} />
           {expanded &&
             <FlexBox $gap='10px'>
@@ -287,18 +342,14 @@ const Content = (): JSX.Element => {
                 EDIT LICENSE
               </Button>
             </FlexBox>}
-          <HoverFlexBox
-            $padding='0 14px 0 14px'
-            $hoverColor={COLORS.lightGray}
-            $borderRadius='5px'
+          <IconButton
             onClick={() => setExpanded(!expanded)}
           >
-            <Icon
-              icon={faCaretRight}
-              style={{ width: '14px' }}
-              rotation={expanded ? 180 : undefined}
-            />
-          </HoverFlexBox>
+            {!expanded
+              ? <ArrowForwardIosIcon />
+              : <ArrowBackIosIcon />
+            }
+          </IconButton>
         </ExtensionMenu>
       </ExtensionContent>
     </ExtensionWrapper>

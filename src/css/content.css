@@ -1,8 +1,5 @@
 .pv-impure-img {
-    /* filter: blur(10px); */
-    /* visibility: hidden; */
-    /* display: none; */
-    /* content: url('https://imgur.com/5UJ6Xgv'); */
+    filter: blur(30px);
 }
 
 .blurred-img-wrapper {

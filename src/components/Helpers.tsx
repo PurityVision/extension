@@ -21,17 +21,22 @@ export const Box = styled.div<BoxProps>`
   border-radius: ${props => props.$borderRadius !== undefined ? props.$borderRadius : ''};
 `
 
-export const FlexBox = styled(Box)<FlexBoxProps>`
+export const FlexBox = styled(Box) <FlexBoxProps>`
   display: flex;
   gap: ${props => props.$gap !== undefined ? props.$gap : 0};
   direction: ${props => props.$direction !== undefined ? props.$direction : 'row'};
+`
+
+export const IconContainer = styled(Box)`
+display: flex;
+align-items: center;
 `
 
 interface IconProps {
   readonly $hoverColor?: string
 }
 
-export const Icon = styled(FontAwesomeIcon)<IconProps>`
+export const Icon = styled(FontAwesomeIcon) <IconProps>`
   cursor: pointer;
 
   &:hover {
@@ -43,7 +48,7 @@ interface HoverFlexBoxProps extends FlexBoxProps {
   readonly $hoverColor?: string
 }
 
-export const HoverFlexBox = styled(FlexBox)<HoverFlexBoxProps>`
+export const HoverFlexBox = styled(FlexBox) <HoverFlexBoxProps>`
   align-items: center;
   cursor: pointer;
 
@@ -85,7 +90,7 @@ interface SlideBoxProps {
   readonly $isExpanded: boolean
 }
 
-export const SlideBox = styled(Box)<SlideBoxProps>`
+export const SlideBox = styled(Box) <SlideBoxProps>`
   width: ${props => props.$isExpanded ? '100%' : 0};
   animation: ${SlideOut} 2s ease-out forwards;
 `
