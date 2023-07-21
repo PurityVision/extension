@@ -1,8 +1,8 @@
 import styled from '@emotion/styled'
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos'
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew'
 import { IconButton } from '@mui/material'
 import { Button } from '@src/components/Button'
 import EditLicense from '@src/components/EditLicense'
@@ -10,10 +10,10 @@ import { FlexBox, IconContainer, SlideUp } from '@src/components/Helpers'
 import MenuStatus, { MenuStatusState } from '@src/components/MenuStatus'
 import { LOGO_B64 } from '@src/constants'
 import React, { useEffect, useState } from 'react'
-import toast, { Toaster } from 'react-hot-toast'
 import browser, { Runtime } from 'webextension-polyfill'
 import { AppStorage, UpdatePanelVisibility } from '../worker'
 import { runFilter, showFilteredImages } from './filter'
+import CustomizedSnackbars, { Severity } from '@src/components/Alert'
 
 const ExtensionWrapper = styled.div`
   width: fit-content;
@@ -62,6 +62,9 @@ const Content = (): JSX.Element => {
   const [editingLicense, setEditingLicense] = useState(false)
   const [filterStatus, setFilterStatus] = useState<MenuStatusState>('off')
   const [filteredImgs, setFilteredImgs] = useState<string[]>([])
+  const [alertOpen, setAlertOpen] = useState(false)
+  const [alertMsg, setAlertMsg] = useState<string>('')
+  const [alertSeverity, setAlertSeverity] = useState<'success' | 'info' | 'warning' | 'error'>('info')
 
   //useEffect(() => {
   //  if (license === '') {
@@ -167,12 +170,16 @@ const Content = (): JSX.Element => {
 
   const handleToggleFilter = async (): Promise<void> => {
     if (license === '') {
-      toast.error('Add a valid license first')
+      setAlertSeverity('error')
+      setAlertMsg('Add a valid license first')
+      setAlertOpen(true)
       return
     }
 
     if (!whitelist.includes(window.location.host)) {
-      toast.error('Add this site first', { position: 'bottom-right' })
+      setAlertSeverity('error')
+      setAlertMsg('Add this site first')
+      setAlertOpen(true)
       return
     }
 
@@ -201,12 +208,18 @@ const Content = (): JSX.Element => {
 
   const handleAddDomain = async (): Promise<void> => {
     if (license === '') {
-      toast.error('Add a valid license first')
+      // toast.error('Add a valid license first')
+      setAlertSeverity('error')
+      setAlertMsg('Add a valid license first')
+      setAlertOpen(true)
       return
     }
 
     if (whitelist.includes(window.location.host)) {
-      toast.error('Site is already added')
+      // toast.error('Site is already added')
+      setAlertSeverity('error')
+      setAlertMsg('Site is already added')
+      setAlertOpen(true)
       return
     }
 
@@ -224,7 +237,7 @@ const Content = (): JSX.Element => {
       setFilterStatus('active')
       await browser.storage.local.set({ whitelist: nuWhitelist, filterEnabled: true })
     } catch (err) {
-      toast.error('something went wrong')
+      // toast.error('something went wrong')
       console.error('failed to set app storage: ', err)
     }
   }
@@ -299,60 +312,72 @@ const Content = (): JSX.Element => {
   }
 
   return (
-    <ExtensionWrapper id='purity-extension-container'>
-      <Toaster position='bottom-right' />
-      <ExtensionContent $panelVisible={panelVisible}>
-        <EditLicenseWrapper $isVisible={editingLicense}>
-          <EditLicense
-            license={license}
-            setLicense={setLicense}
-            onSaveLicense={license => {
-              browser.storage.local.set({ licenseID: license })
-                .then(() => {
-                  setLicenseSaved(true)
-                  setEditingLicense(false)
-                })
-                .catch(err => { console.error(err) })
-            }}
-            onCloseHandler={() => setEditingLicense(false)}
-          />
-        </EditLicenseWrapper>
-        <ExtensionMenu>
-          <IconContainer
-            $padding='0 0 0 7px'
-          >
-            <a href={process.env.LANDING_PAGE_URL} target='_blank' rel='noreferrer'>
-              <img
-                id='purity-vision-panel-logo'
-                src={`data:image/png;base64,${LOGO_B64}`}
-                alt=''
-                style={{ height: '35px', verticalAlign: 'middle' }}
-              />
-            </a>
-          </IconContainer>
-          <MenuStatus state={filterStatus} count={filteredImgs.length} />
-          {expanded &&
-            <FlexBox $gap='10px'>
-              {filterButton()}
-              {whitelistButton()}
-              <Button
-                variant='outlined'
-                onClick={() => setEditingLicense(!editingLicense)}
-              >
-                EDIT LICENSE
-              </Button>
-            </FlexBox>}
-          <IconButton
-            onClick={() => setExpanded(!expanded)}
-          >
-            {!expanded
-              ? <ArrowForwardIosIcon />
-              : <ArrowBackIosIcon />
-            }
-          </IconButton>
-        </ExtensionMenu>
-      </ExtensionContent>
-    </ExtensionWrapper>
+    <>
+      <CustomizedSnackbars
+        open={alertOpen}
+        message={alertMsg}
+        severity={alertSeverity}
+        onClose={() => setAlertOpen(false)}
+      />
+      <ExtensionWrapper id='purity-extension-container'>
+        <ExtensionContent $panelVisible={panelVisible}>
+          <EditLicenseWrapper $isVisible={editingLicense}>
+            <EditLicense
+              license={license}
+              setLicense={setLicense}
+              onSaveLicense={license => {
+                browser.storage.local.set({ licenseID: license })
+                  .then(() => {
+                    setLicenseSaved(true)
+                    setEditingLicense(false)
+                  })
+                  .catch(err => { console.error(err) })
+              }}
+              onCloseHandler={() => setEditingLicense(false)}
+              onAlert={(msg: string, severity: Severity) => {
+                setAlertSeverity(severity)
+                setAlertMsg(msg)
+                setAlertOpen(true)
+              }}
+            />
+          </EditLicenseWrapper>
+          <ExtensionMenu>
+            <IconContainer
+              $padding='0 0 0 7px'
+            >
+              <a href={process.env.LANDING_PAGE_URL} target='_blank' rel='noreferrer'>
+                <img
+                  id='purity-vision-panel-logo'
+                  src={`data:image/png;base64,${LOGO_B64}`}
+                  alt=''
+                  style={{ height: '35px', verticalAlign: 'middle' }}
+                />
+              </a>
+            </IconContainer>
+            <MenuStatus state={filterStatus} count={filteredImgs.length} />
+            {expanded &&
+              <FlexBox $gap='10px'>
+                {filterButton()}
+                {whitelistButton()}
+                <Button
+                  variant='outlined'
+                  onClick={() => setEditingLicense(!editingLicense)}
+                >
+                  EDIT LICENSE
+                </Button>
+              </FlexBox>}
+            <IconButton
+              onClick={() => setExpanded(!expanded)}
+            >
+              {!expanded
+                ? <ArrowForwardIosIcon />
+                : <ArrowBackIosNewIcon />
+              }
+            </IconButton>
+          </ExtensionMenu>
+        </ExtensionContent>
+      </ExtensionWrapper>
+    </>
   )
 }
 

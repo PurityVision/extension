@@ -28,6 +28,10 @@
       "run_at": "document_end",
       "js": [
         "js/content.js"
+      ],
+      "css": [
+	"css/normalize.css",
+	"css/content.css"
       ]
     }
   ]

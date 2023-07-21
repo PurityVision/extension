@@ -2,34 +2,20 @@
     filter: blur(30px);
 }
 
-.blurred-img-wrapper {
-    border: 1px dashed #ff1818;
-}
-
-.warning-tag {
-    font-size: 0.6rem;
-}
-
-.fail-reason-text {
-    color: #ff1818;
-}
-
-#pv-loading-tab {
-  display: flex;
-  z-index: 9000;
-  background-color: #ff9d9d;
-  opacity: 90%;
-  color: white;
-  position: fixed;
-  top: 0;
-  left: 0;
-  padding: 16px;
-  gap: 8px;
-  justify-items: center;
-  align-items: center;
-  color: white;
-}
-
 .MuiButton-endIcon {
     width: 20px !important;
 }
+
+// #purity-extension-container {
+//   width: fit-content;
+//   position: fixed;
+//   color: #434343;
+//   left: 0;
+//   right: 0;
+//   bottom: 0;
+//   z-index: 696969;
+//   margin: 0 0 0 1rem;
+//   max-width: 1054px !important;
+//   font-size: 14px !important;
+//   font-family: arial,helvetica,sans-serif !important;
+// }
