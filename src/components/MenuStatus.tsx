@@ -2,8 +2,9 @@ import { COLORS } from '@src/constants'
 import React from 'react'
 import styled from '@emotion/styled'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faSpinner } from '@fortawesome/free-solid-svg-icons'
 import { FlexBox } from './Helpers'
+import CircularProgress from '@mui/material/CircularProgress'
+
 
 export type MenuStatusState = 'loading' | 'active' | 'off' | 'not whitelisted' | undefined
 
@@ -30,6 +31,8 @@ const MenuStatusContainer = styled.div`
   border-width: 0 1px 0 1px;
   padding: 0 10px;
   display: flex;
+  text-transform: uppercase;
+  font-size: 12px;
   align-items: center;
 `
 
@@ -54,7 +57,7 @@ const MenuStatus = ({ state, count }: MenuStatusProps): JSX.Element => {
         <MenuStatusContainer>
           <FlexBox $gap='10px' style={{ alignItems: 'center' }}>
             <span>Running Filter</span>
-            <Spinner icon={faSpinner} />
+            <CircularProgress />
           </FlexBox>
         </MenuStatusContainer>
       )
