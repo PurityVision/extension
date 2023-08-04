@@ -1,0 +1,35 @@
+{
+  "name": "Purity Vision",
+  "description": "Filter explicit images from the impure web",
+  "manifest_version": 3,
+  "version": "1.0.0",
+  "action": {
+    "default_icon": "img/logo.png",
+    "default_popup": "popup.html"
+  },
+  "icons": {
+    "16": "img/logo-16.png",
+    "48": "img/logo-48.png",
+    "128": "img/logo-128.png"
+  },
+  "background": {
+    "scripts": ["js/worker.js"]
+  },
+  "permissions": [
+    "storage"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "run_at": "document_end",
+      "js": [
+        "js/content.js"
+      ],
+      "css": [
+	"css/content.css"
+      ]
+    }
+  ]
+}

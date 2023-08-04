@@ -7,6 +7,8 @@
         "build": "webpack --config webpack.prod.js",
         "dev": "webpack -w --config webpack.dev.js",
         "prod-dev": "webpack -w --config webpack.prod.js",
+        "dev-firefox": "webpack --env target=firefox --config webpack.dev.js",
+        "build-firefox": "webpack --env target=firefox --config webpack.prod.js",
         "test": "jest --config=jest.config.js",
         "lint": "standard",
         "storybook": "start-storybook -p 6006",
