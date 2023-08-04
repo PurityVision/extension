@@ -7,18 +7,16 @@
     "default_icon": "img/logo.png",
     "default_popup": "popup.html"
   },
+  "icons": {
+    "16": "img/logo-16.png",
+    "48": "img/logo-48.png",
+    "128": "img/logo-128.png"
+  },
   "background": {
     "service_worker": "js/worker.js"
   },
-  "host_permissions": [
-    "https:\/\/*/*"
-  ],
   "permissions": [
-    "storage",
-    "tabs",
-    "activeTab",
-    "notifications",
-    "scripting"
+    "storage"
   ],
   "content_scripts": [
     {
@@ -30,7 +28,6 @@
         "js/content.js"
       ],
       "css": [
-	"css/normalize.css",
 	"css/content.css"
       ]
     }

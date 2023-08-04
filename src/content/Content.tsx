@@ -26,7 +26,7 @@ const ExtensionWrapper = styled.div`
   margin: 0 0 0 1rem;
   max-width: 1054px !important;
   font-size: 14px !important;
-  font-family: arial,helvetica,sans-serif !important;
+  font-family: "Roboto","Helvetica","Arial",sans-serif;
 `
 interface ExtensionContentProps {
   readonly $panelVisible: boolean

@@ -1,7 +1,6 @@
 import { COLORS } from '@src/constants'
 import React from 'react'
 import styled from '@emotion/styled'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { FlexBox } from './Helpers'
 import CircularProgress from '@mui/material/CircularProgress'
 
@@ -32,22 +31,8 @@ const MenuStatusContainer = styled.div`
   padding: 0 10px;
   display: flex;
   text-transform: uppercase;
-  font-size: 12px;
+  font-size: 14px;
   align-items: center;
-`
-
-const Spinner = styled(FontAwesomeIcon)`
-  @keyframes spin {
-    0% {
-      transform: rotate(0deg);
-    }
-
-    100% {
-      transform: rotate(360deg);
-    }
-  }
-
-  animation: spin 1s infinite linear;
 `
 
 const MenuStatus = ({ state, count }: MenuStatusProps): JSX.Element => {
@@ -65,7 +50,6 @@ const MenuStatus = ({ state, count }: MenuStatusProps): JSX.Element => {
       return (
         <MenuStatusContainer>
           <div>
-            <ActiveText>Site Enabled</ActiveText>
             <NoSpaceP>{count} NSFW images</NoSpaceP>
           </div>
         </MenuStatusContainer>

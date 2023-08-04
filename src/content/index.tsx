@@ -21,7 +21,7 @@ shadow.appendChild(emotionRoot)
 shadow.appendChild(reactRoot)
 
 export const myCache = createCache({
-  key: 'css',
+  key: 'purity-vision-css',
   prepend: true,
   container: emotionRoot
 })
