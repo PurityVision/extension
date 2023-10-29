@@ -3,7 +3,7 @@ if (process.env.API_URL === undefined) {
 }
 const apiURL = process.env.API_URL
 
-export async function annotateImages(imgURIs: string[], license: string): Promise<Response | undefined> {
+export async function annotateImages (imgURIs: string[], license: string): Promise<Response | undefined> {
   const url = `${apiURL}/filter/batch`
   const opts = {
     method: 'post',
@@ -16,7 +16,7 @@ export async function annotateImages(imgURIs: string[], license: string): Promis
   return await fetch(url, opts)
 }
 
-export async function health(): Promise<Response | undefined> {
+export async function health (): Promise<Response | undefined> {
   const url = `${apiURL}/health`
   try {
     return await fetch(url, {})
@@ -32,7 +32,7 @@ interface License {
   isValid: boolean
 }
 
-export async function getLicense(id: string): Promise<[License | undefined, Error | undefined]> {
+export async function getLicense (id: string): Promise<[License | undefined, Error | undefined]> {
   const url = `${apiURL}/license/${id}`
   try {
     const res = await fetch(url, {})

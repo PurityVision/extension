@@ -43,24 +43,24 @@ const IMPURE_IMG_CLASS = 'pv-impure-img'
 // const pureImgs: HTMLImageElement[] = []
 
 // TODO: get imgs from other sources like background-image
-function getPageImages(): HTMLImageElement[] {
+function getPageImages (): HTMLImageElement[] {
   return [].slice.call(document.getElementsByTagName('img'))
     .filter((img: HTMLImageElement) => img.id !== 'purity-vision-panel-logo')
 }
 
 interface FilterOpts {
-  licenseID: string
+  license: string
   wholePage?: boolean
   images?: HTMLImageElement[]
 }
 
-export async function runFilter({
-  licenseID,
+export async function filterPage ({
+  license,
   wholePage = true,
-  images,
+  images
 }: FilterOpts): Promise<string[]> {
   console.log('running Purity filter')
-  if (!wholePage && !images) {
+  if (!wholePage && (images == null)) {
     throw new Error('opts.wholePage and opts.images cannot both be undefined')
   }
 
@@ -71,42 +71,36 @@ export async function runFilter({
   // Preemptively blur/filter images to avoid showing explicit content before API filter request completes.
   hideImages(images)
 
-  try {
-    return await filterImgTags(images, licenseID)
-  } catch (err) {
-    showFilteredImages(images)
-    console.error(err)
-    return []
-  }
+  return await filterImgTags(images, license)
 }
 
 const hideImage = (img: HTMLImageElement): void => {
   img.classList.add(IMPURE_IMG_CLASS)
-  //const size = img.width > img.height ? img.width : img.height
-  //img.setAttribute('old-src', img.src)
-  //img.setAttribute('old-size', `${img.width}:${img.height}`)
-  //img.src = 'https://i.imgur.com/tmtD11P.png'
-  //img.src = 'https://i.imgur.com/67VE1Lr.gif'
-  //img.width = size
-  //img.height = size
+  // const size = img.width > img.height ? img.width : img.height
+  // img.setAttribute('old-src', img.src)
+  // img.setAttribute('old-size', `${img.width}:${img.height}`)
+  // img.src = 'https://i.imgur.com/tmtD11P.png'
+  // img.src = 'https://i.imgur.com/67VE1Lr.gif'
+  // img.width = size
+  // img.height = size
 }
 
 const hideImages = (imgs: HTMLImageElement[]): void => imgs.forEach(i => hideImage(i))
 
 const showImage = (img: HTMLImageElement): void => {
   img.classList.remove(IMPURE_IMG_CLASS)
-  //img.src = img.getAttribute('old-src') ?? ''
-  //const split = img.getAttribute('old-size')?.split(':')
-  //if (split === undefined) {
+  // img.src = img.getAttribute('old-src') ?? ''
+  // const split = img.getAttribute('old-size')?.split(':')
+  // if (split === undefined) {
   //  return
-  //}
-  //img.width = Number(split[0])
-  //img.height = Number(split[1])
+  // }
+  // img.width = Number(split[0])
+  // img.height = Number(split[1])
 }
 
 export const showFilteredImages = (images?: HTMLImageElement[]): void => {
   if (images !== undefined) {
-    images.forEach(i => showImage(i as HTMLImageElement))
+    images.forEach(i => showImage(i))
   } else {
     document.querySelectorAll(`img.${IMPURE_IMG_CLASS}`).forEach(i => showImage(i as HTMLImageElement))
   }
@@ -115,7 +109,13 @@ export const showFilteredImages = (images?: HTMLImageElement[]): void => {
 // const showPageImages = (): void => { getPageImages().forEach(img => img.classList.remove(IMPURE_IMG_CLASS)) }
 // const hidePageImages = (): void => hideImages(getPageImages())
 
-async function filterImgTags(imgs: HTMLImageElement[], license: string): Promise<string[]> {
+/**
+ *
+ * @param imgs - the images to filter
+ * @param license - the license for Purity Vision API
+ * @returns the images that were filtered (hidden) on the webpage
+ */
+async function filterImgTags (imgs: HTMLImageElement[], license: string): Promise<string[]> {
   if (imgs.length === 0) {
     return []
   }
@@ -130,7 +130,7 @@ async function filterImgTags(imgs: HTMLImageElement[], license: string): Promise
 
   const imageAnnotations = await res.json() as ImageAnnotation[]
 
-  //await sendFilterMsg(imageAnnotations, imgs)
+  // await sendFilterMsg(imageAnnotations, imgs)
 
   const failedAnnotations = showCleanImgs(imageAnnotations, imgs)
 

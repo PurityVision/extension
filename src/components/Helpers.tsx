@@ -24,7 +24,7 @@ export const Box = styled.div<BoxProps>`
 export const FlexBox = styled(Box) <FlexBoxProps>`
   display: flex;
   gap: ${props => props.$gap !== undefined ? props.$gap : 0};
-  direction: ${props => props.$direction !== undefined ? props.$direction : 'row'};
+  flex-direction: ${props => props.$direction !== undefined ? props.$direction : 'row'};
 `
 
 export const IconContainer = styled(Box)`

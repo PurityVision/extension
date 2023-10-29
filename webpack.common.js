@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
+/* eslint-disable no-undef */
 const path = require('path')
 const CopyPlugin = require('copy-webpack-plugin')
 
@@ -8,8 +10,8 @@ module.exports = (env) => {
   }
 
   const manifestPattern = env.target === 'firefox'
-	? { from: 'manifest-firefox.json', to: '../manifest.json', context: '.' }
-	: { from: 'manifest.json', to: '../', context: '.' }
+    ? { from: 'manifest-firefox.json', to: '../manifest.json', context: '.' }
+    : { from: 'manifest.json', to: '../', context: '.' }
 
   return {
     entry: {
@@ -23,13 +25,13 @@ module.exports = (env) => {
     },
     module: {
       rules: [
-	{
+        {
           exclude: /node_modules/,
           test: /\.tsx?$/,
           use: 'ts-loader'
-	},
-	// Treat src/css/app.css as a global stylesheet
-	{
+        },
+        // Treat src/css/app.css as a global stylesheet
+        {
           // test: /app.css$/,
           test: /\.css$/,
           use: [
@@ -37,41 +39,41 @@ module.exports = (env) => {
             'css-loader',
             'postcss-loader'
           ]
-	},
-	// Load .module.css files as CSS modules
-	{
+        },
+        // Load .module.css files as CSS modules
+        {
           test: /\.module.css$/,
           use: [
             'style-loader',
             {
               loader: 'css-loader',
               options: {
-		modules: true
+                modules: true
               }
             },
             'postcss-loader'
           ]
-	}
+        }
       ]
     },
     // Setup @src path resolution for TypeScript files
     resolve: {
       extensions: ['.ts', '.tsx', '.js'],
       alias: {
-	'@src': path.resolve(__dirname, 'src/')
+        '@src': path.resolve(__dirname, 'src/')
       }
     },
     plugins: [
       // CSS copier
       new CopyPlugin({
-	patterns: [
+        patterns: [
           manifestPattern,
           { from: '.', to: '../css', context: 'src/css' },
-  	  { from: './popup.html', to: '../', context: 'src/popup' },
-  	  { from: './', to: '../img', context: 'src/img' }
-	]
+          { from: './popup.html', to: '../', context: 'src/popup' },
+          { from: './', to: '../img', context: 'src/img' }
+        ]
       })
     ]
-    
+
   }
 }

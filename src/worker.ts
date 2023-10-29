@@ -9,21 +9,15 @@ export interface UpdatePanelVisibility {
 }
 
 export interface AppStorage {
-  licenseID: string
-  filterEnabled: boolean
-  panelVisible: boolean
-  needsRefresh: boolean
-  whitelist: string[]
+  license: string
+  whitelist: string[] // Site must be in whitelist for filter to run on that site.
   tabs: {
     [tabID: number]: string[]
   }
 }
 
 browser.storage.local.set({
-  licenseID: '',
-  filterEnabled: false,
-  needsRefresh: false,
-  panelVisible: true,
+  license: '',
   whitelist: [],
   tabs: {}
 })

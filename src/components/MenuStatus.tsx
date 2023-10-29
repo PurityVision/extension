@@ -4,18 +4,17 @@ import styled from '@emotion/styled'
 import { FlexBox } from './Helpers'
 import CircularProgress from '@mui/material/CircularProgress'
 
-
-export type MenuStatusState = 'loading' | 'active' | 'off' | 'not whitelisted' | undefined
+export type MenuStatusState = 'loading' | 'active' | 'invalid license' | undefined
 
 interface MenuStatusProps {
   state: MenuStatusState
   count?: number
 }
 
-const ActiveText = styled.p`
-  color: ${COLORS.green};
-  margin: 0 !important;
-`
+// const ActiveText = styled.p`
+//   color: ${COLORS.green};
+//   margin: 0 !important;
+// `
 const DisabledText = styled.p`
   color: ${COLORS.red};
   margin: 0 !important;
@@ -54,19 +53,11 @@ const MenuStatus = ({ state, count }: MenuStatusProps): JSX.Element => {
           </div>
         </MenuStatusContainer>
       )
-    case 'off':
+    case 'invalid license':
       return (
         <MenuStatusContainer>
           <FlexBox style={{ alignItems: 'center' }}>
-            <DisabledText>Filter Disabled</DisabledText>
-          </FlexBox>
-        </MenuStatusContainer>
-      )
-    case 'not whitelisted':
-      return (
-        <MenuStatusContainer>
-          <FlexBox style={{ alignItems: 'center' }}>
-            <DisabledText>Site not added</DisabledText>
+            <DisabledText>Invalid License</DisabledText>
           </FlexBox>
         </MenuStatusContainer>
       )

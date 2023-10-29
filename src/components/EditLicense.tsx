@@ -5,17 +5,17 @@ import CloseIcon from '@mui/icons-material/Close'
 import { Link } from '@mui/material'
 import IconButton from '@mui/material/IconButton'
 import TextField from '@mui/material/TextField'
-import { getLicense } from '@src/api'
 import { Button } from '@src/components/Button'
 import { COLORS } from '@src/constants'
 import React, { useEffect, useRef, useState } from 'react'
 import { Severity } from './Alert'
+import { validateLicense } from '@src/utils'
 
 interface AddLicenseProps {
   license: string
   setLicense: React.Dispatch<React.SetStateAction<string>>
   onSaveLicense: (license: string) => void
-  onCloseHandler: any
+  onCloseHandler: React.MouseEventHandler<HTMLElement>
   onAlert: (msg: string, severity: Severity) => void
 }
 
@@ -27,33 +27,6 @@ const Wrapper = styled.div`
 const TextSection = styled.div`
   margin-bottom: 30px;
 `
-const validateLicense = async (
-  licenseID: string,
-  onAlert: (msg: string, severity: Severity) => void
-): Promise<boolean> => {
-  const [license, err] = await getLicense(licenseID)
-  if (err !== undefined) {
-    // toast.error('Something went wrong')
-    console.error('failed to fetch license: ', err)
-    onAlert('Something went wrong', 'error')
-    return false
-  }
-
-  if (license == null) {
-    // toast.error('License was not found')
-    onAlert('License was not found', 'error')
-    return false
-  }
-
-  if (!license.isValid) {
-    // toast.error('License has expired or is invalid')
-    onAlert('License has expired or is invalid', 'error')
-  }
-
-  return license?.isValid
-}
-
-
 const EditLicense: React.FC<AddLicenseProps> = (
   { license, setLicense, onSaveLicense, onCloseHandler, onAlert }
 ): JSX.Element => {
@@ -68,7 +41,7 @@ const EditLicense: React.FC<AddLicenseProps> = (
       return
     }
 
-    validateLicense(license, onAlert)
+    validateLicense(license)
       .then(isValid => setIsValid(isValid))
       .catch(err => { console.error(err) })
   }, [license])
@@ -93,7 +66,7 @@ const EditLicense: React.FC<AddLicenseProps> = (
       </TextSection>
       <form onSubmit={e => {
         e.preventDefault()
-        validateLicense(license, onAlert)
+        validateLicense(license)
           .then(isValid => {
             setIsValid(isValid)
 
@@ -109,8 +82,8 @@ const EditLicense: React.FC<AddLicenseProps> = (
       >
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <TextField
-            label="License"
-            variant="outlined"
+            label='License'
+            variant='outlined'
             value={license}
             fullWidth
             onChange={(e) => { setLicense(e.target.value) }}
@@ -122,23 +95,23 @@ const EditLicense: React.FC<AddLicenseProps> = (
 
           {isValid
             ? <CheckCircleIcon
-              style={{
-                color: 'green',
-                transform: 'translateX(-28px)',
-                position: 'fixed',
-                right: 0
-              }}
-            />
+                style={{
+                  color: 'green',
+                  transform: 'translateX(-28px)',
+                  position: 'fixed',
+                  right: 0
+                }}
+              />
 
             : <CancelIcon
-              className='text-red-400'
-              style={{
-                color: 'red',
-                transform: 'translateX(-28px)',
-                position: 'fixed',
-                right: 0
-              }}
-            />}
+                className='text-red-400'
+                style={{
+                  color: 'red',
+                  transform: 'translateX(-28px)',
+                  position: 'fixed',
+                  right: 0
+                }}
+              />}
 
         </div>
         <Button
@@ -152,7 +125,7 @@ const EditLicense: React.FC<AddLicenseProps> = (
           SAVE
         </Button>
       </form>
-    </Wrapper >
+    </Wrapper>
   )
 }
 

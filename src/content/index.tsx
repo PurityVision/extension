@@ -1,56 +1,54 @@
-import React from 'react'
-import { createRoot } from 'react-dom/client'
-import Content from './Content'
-import content from '!!raw-loader!../css/content.css'
-import createCache from '@emotion/cache'
-import { CacheProvider } from '@emotion/react'
-import { createTheme, ThemeProvider } from "@mui/material/styles"
-const contentStyles = document.createElement('style')
+import browser from 'webextension-polyfill'
+import { filterPage, showFilteredImages } from './filter'
+import { AppStorage } from '@src/worker'
+import { validateLicense } from '@src/utils'
 
-contentStyles.textContent = content
-
-const emotionRoot = document.createElement('style')
-
-const shadowHost = document.createElement('div')
-const shadow = shadowHost.attachShadow({ mode: 'open' })
-document.body.appendChild(shadowHost)
-const reactRoot = document.createElement('div')
-reactRoot.id = 'content-react'
-shadow.appendChild(contentStyles)
-shadow.appendChild(emotionRoot)
-shadow.appendChild(reactRoot)
-
-export const myCache = createCache({
-  key: 'purity-vision-css',
-  prepend: true,
-  container: emotionRoot
-})
-
-const shadowTheme = createTheme({
-  components: {
-    MuiPopover: {
-      defaultProps: {
-        container: reactRoot
-      }
-    },
-    MuiPopper: {
-      defaultProps: {
-        container: reactRoot
-      }
-    },
-    MuiModal: {
-      defaultProps: {
-        container: reactRoot
-      }
-    }
+// Run filter if this host is whitelisted
+const onLoad = (): void => {
+  const init = async (): Promise<void> => {
+    void tryRunFilter()
+    registerOnWhitelisted()
   }
-})
 
-createRoot(reactRoot).render(
-  <CacheProvider value={myCache}>
-    <ThemeProvider theme={shadowTheme}>
-      <Content />
-    </ThemeProvider>
-  </CacheProvider>
-)
+  init()
+    .then(() => { /* */ })
+    .catch(err => console.log(err))
+}
 
+const tryRunFilter = async (): Promise<void> => {
+  const storage = await browser.storage.local.get() as AppStorage
+
+  try {
+    const licenseValid = await validateLicense(storage.license)
+    if (!licenseValid) {
+      console.log('license not valid, not running filter')
+    }
+    if (storage.whitelist.includes(window.location.host)) {
+      await filterPage({ license: storage.license, wholePage: true })
+    }
+  } catch (err) {
+    console.log(err)
+  }
+}
+
+const onWhitelistedListener = (changes: browser.Storage.StorageAreaOnChangedChangesType): void => {
+  if (!('whitelist' in changes)) {
+    return
+  }
+
+  const whitelist: string[] = changes.whitelist.newValue
+  if (whitelist.includes(window.location.host)) {
+    void tryRunFilter()
+  } else {
+    showFilteredImages()
+  }
+}
+
+const registerOnWhitelisted = (): void => browser.storage.local.onChanged.addListener(onWhitelistedListener)
+
+// Disable filter when this host is removed from whitelist
+
+// Run filter on new DOM content when content is added to DOM
+
+window.addEventListener('load', () => onLoad())
+window.addEventListener('unload', () => browser.storage.onChanged.removeListener(onWhitelistedListener))
