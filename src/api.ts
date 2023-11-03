@@ -30,6 +30,8 @@ interface License {
   email: string
   stripeID: string
   isValid: boolean
+  validityReason: string
+  requestCount: number
 }
 
 export async function getLicense (id: string): Promise<[License | undefined, Error | undefined]> {
