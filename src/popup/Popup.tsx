@@ -5,11 +5,12 @@ import FormControlLabel from '@mui/material/FormControlLabel'
 import Link from '@mui/material/Link'
 import Switch from '@mui/material/Switch'
 import TextField from '@mui/material/TextField'
+import { getLicense } from '@src/api'
 import { FlexBox } from '@src/components/Helpers'
 import { LOGO_B64 } from '@src/constants'
 import { getCurrentTab, licensePattern, validateLicense } from '@src/utils'
 import { AppStorage } from '@src/worker'
-import React, { useEffect, useState } from 'react'
+import React, { ChangeEvent, useEffect, useState } from 'react'
 import browser from 'webextension-polyfill'
 
 const Wrapper = styled.div`
@@ -31,19 +32,34 @@ const TitleBox = styled.div`
   justify-content: space-between;
 `
 
+const LicenseErrText = styled.p`
+  color: red;
+`
+
+const LicenseSwitchLabel = styled(FormControlLabel)`
+  border-radius: 5px;
+  padding: 0 10px 0 10px;
+
+  :hover {
+    background: #e8e8e8;
+  }
+`
+
 const Popup = (): JSX.Element => {
   const [siteWhitelisted, setSiteWhitelisted] = useState(false)
   const [isLoaded, setIsLoaded] = useState(false)
   const [host, setHost] = useState('')
   const [whitelist, setWhitelist] = useState<string[]>([])
-  const [license, setLicense] = useState('')
+  const [licenseID, setLicenseID] = useState('')
   const [licenseValid, setLicenseValid] = useState(false)
+  const [usage, setUsage] = useState(0)
+  const [invalidLicenseError, setInvalidLicenseError] = useState('')
 
   useEffect(() => {
     const init = async (): Promise<void> => {
       const storage = await browser.storage.local.get() as AppStorage
       setWhitelist(storage.whitelist)
-      setLicense(storage.license)
+      setLicenseID(storage.license)
 
       const tab = await getCurrentTab()
       const host = new URL(tab.url ?? '').host
@@ -53,13 +69,33 @@ const Popup = (): JSX.Element => {
       }
 
       try {
-        setLicenseValid(await validateLicense(storage.license))
+        if (storage.license === '') {
+          return
+        }
+        if (!validateLicense(storage.license)) {
+          setInvalidLicenseError('license not valid')
+          return
+        }
+
+        const [license, err] = await getLicense(storage.license)
+        if (err !== undefined) {
+          setInvalidLicenseError(err.message)
+          return
+        }
+        if (license === undefined) {
+          setInvalidLicenseError('license not found')
+          return
+        }
+
+        setLicenseValid(license.isValid)
+        setInvalidLicenseError(license.validityReason)
+        setUsage(license.requestCount)
       } catch (err) {
         console.log(err)
         setLicenseValid(false)
+      } finally {
+        setIsLoaded(true)
       }
-
-      setIsLoaded(true)
     }
     void init()
   }, [])
@@ -84,41 +120,68 @@ const Popup = (): JSX.Element => {
     setSiteWhitelisted(!siteWhitelisted)
   }
 
-  const handleChangeLicense = (e: any): void => {
-    const lic = e.target.value
-    setLicense(lic)
+  const handleChangeLicense = (e: ChangeEvent<HTMLInputElement>): void => {
+    const licenseID = e.target.value
+    setLicenseID(licenseID)
 
-    validateLicense(lic)
-      .then(isValid => {
-        if (isValid) {
-          browser.storage.local.set({ license: lic })
-            .catch(err => console.log(err))
+    if (licenseID.trim() === '') {
+      setInvalidLicenseError('')
+      setLicenseValid(false)
+      return
+    }
+
+    if (!validateLicense(licenseID)) {
+      setLicenseValid(false)
+      setInvalidLicenseError('not a valid license')
+      return
+    }
+
+    getLicense(licenseID)
+      .then(([license, err]) => {
+        if (err !== undefined || license === undefined) {
+          setLicenseValid(false)
+          return
         }
-        setLicenseValid(isValid)
+
+        if (license.isValid) {
+          browser.storage.local.set({ license: licenseID })
+            .catch(err => console.log(err))
+        } else {
+          setInvalidLicenseError(license.validityReason)
+        }
+        setLicenseValid(license.isValid)
       })
       .catch(err => {
-        console.log(err)
         setLicenseValid(false)
+        console.log(err)
       })
   }
 
   return (
     <Wrapper>
       <TitleBox>
-        <img
-          src={`data:image/png;base64,${LOGO_B64}`}
-          style={{ height: '35px', verticalAlign: 'middle' }}
-        />
-        <Title>
-          {!whitelist.includes(host)
-            ? <span style={{ color: 'red' }}>FILTER IS OFF</span>
-            : <span style={{ color: 'green' }}>FILTER IS ON</span>}
-        </Title>
+        <a href={process.env.LANDING_PAGE_URL} target='_blank' rel='noreferrer'>
+          <img
+            src={`data:image/png;base64,${LOGO_B64}`}
+            style={{ height: '35px', verticalAlign: 'middle' }}
+          />
+        </a>
+        <div>
+          <Title>
+            {!whitelist.includes(host)
+              ? <span style={{ color: 'red' }}>FILTER IS OFF</span>
+              : <span style={{ color: 'green' }}>FILTER IS ON</span>}
+          </Title>
+          <div className='flex gap-4 text-xl'>
+            <span>Usage this period: </span>
+            <span>{usage}</span>
+          </div>
+        </div>
       </TitleBox>
       {isLoaded &&
         <div>
           <FlexBox $gap='10px' style={{ alignItems: 'center', justifyContent: 'space-between', margin: '1rem 0 1rem 0' }}>
-            <FormControlLabel
+            <LicenseSwitchLabel
               style={{
                 marginLeft: 0,
                 display: 'flex',
@@ -140,7 +203,7 @@ const Popup = (): JSX.Element => {
           <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
             <TextField
               label='License'
-              value={license}
+              value={licenseID}
               fullWidth
               onChange={handleChangeLicense}
               inputProps={{
@@ -168,6 +231,7 @@ const Popup = (): JSX.Element => {
                   }}
                 />}
           </div>
+          {invalidLicenseError !== '' && <LicenseErrText>{invalidLicenseError}</LicenseErrText>}
           <Link href={process.env.LANDING_PAGE_URL} target='_blank' rel='noreferrer'>Get a License</Link>
         </div>}
     </Wrapper>
