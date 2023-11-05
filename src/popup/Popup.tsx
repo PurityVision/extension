@@ -112,6 +112,10 @@ const Popup = (): JSX.Element => {
         }
         setWhitelist(tmp)
         await browser.storage.local.set({ whitelist: tmp })
+        const tab = await getCurrentTab()
+        if (tab.id !== undefined) {
+          await browser.tabs.sendMessage(tab.id, { host, isEnabled })
+        }
       } catch (err) {
         console.log(err)
       }

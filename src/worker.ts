@@ -16,6 +16,11 @@ export interface AppStorage {
   }
 }
 
+export interface SiteToggleMessage {
+  host: string
+  isEnabled: boolean
+}
+
 browser.storage.local.set({
   license: '',
   whitelist: [],
