@@ -1,4 +1,5 @@
 import { annotateImages } from '@src/api'
+import { FILTER_PAGE_SIZE } from '@src/constants'
 
 export interface ImgFilterRes {
   imgURI: string
@@ -22,7 +23,7 @@ enum Likelihood {
   Likelihood_VERY_LIKELY = 5
 }
 
-export interface ImageAnnotation {
+export interface SafeSearchAnnotation {
   hash: string
   uri: string
   error: {
@@ -121,36 +122,64 @@ async function filterImgTags (imgs: HTMLImageElement[], license: string): Promis
   }
 
   // const imgURIList = imgs.map(img => img.getAttribute('old-src') as string)
+  const filteredImgURIs = []
   const imgURIs = imgs.map(img => img.src)
 
-  const res = await annotateImages(imgURIs, license)
-  if (res === undefined || res.status !== 200) {
-    throw new Error('failed to fetch')
+  for (let i = 0; i < imgURIs.length;) {
+    let endIdx: number
+    if (i + FILTER_PAGE_SIZE > imgURIs.length - 1) {
+      endIdx = imgURIs.length
+    } else {
+      endIdx = i + FILTER_PAGE_SIZE
+    }
+
+    const uriPage = imgURIs.slice(i, endIdx)
+    const imgsPage = imgs.slice(i, endIdx)
+
+    const res = await annotateImages(uriPage, license)
+    if (res === undefined || res.status !== 200) {
+      throw new Error('failed to fetch')
+    }
+
+    const SSAs = await res.json() as SafeSearchAnnotation[] ?? []
+
+    // const unsafeSSAs = showCleanImgs(SSAs, imgsPage)
+    filteredImgURIs.push(...showCleanImgs(SSAs, imgsPage).map(ssa => ssa.uri))
+    showUnfilteredImgs(SSAs, imgsPage)
+
+    i += FILTER_PAGE_SIZE
   }
 
-  const imageAnnotations = await res.json() as ImageAnnotation[]
-
-  // await sendFilterMsg(imageAnnotations, imgs)
-
-  const failedAnnotations = showCleanImgs(imageAnnotations, imgs)
-
-  return failedAnnotations.map(anno => anno.uri)
+  return filteredImgURIs
 }
 
-const isAnnotationSafe = (annotation: ImageAnnotation): boolean => {
-  if (annotation.adult >= Likelihood.Likelihood_LIKELY) {
+const showUnfilteredImgs = (SSAs: SafeSearchAnnotation[], imgs: HTMLImageElement[]): void => {
+  imgs
+    .filter(img => SSAs.find(a => a.uri === img.src) === undefined)
+    .forEach(img => showImage(img))
+}
+
+const isAnnotationSafe = (ssa: SafeSearchAnnotation): boolean => {
+  // Image failed to filture so we assume it's safe to show.
+  // NOTE: this is primarily to handle expired trial licenses,
+  // other errors could warrant returning false.
+  if (ssa.error.valid) {
+    return true
+  }
+
+  if (ssa.adult >= Likelihood.Likelihood_LIKELY) {
     return false
   }
 
-  if (annotation.medical >= Likelihood.Likelihood_LIKELY) {
+  if (ssa.medical >= Likelihood.Likelihood_LIKELY) {
     return false
   }
 
-  if (annotation.violence >= Likelihood.Likelihood_LIKELY) {
+  if (ssa.violence >= Likelihood.Likelihood_LIKELY) {
     return false
   }
 
-  if (annotation.racy >= Likelihood.Likelihood_POSSIBLE) {
+  if (ssa.racy >= Likelihood.Likelihood_LIKELY) {
     return false
   }
 
@@ -158,7 +187,7 @@ const isAnnotationSafe = (annotation: ImageAnnotation): boolean => {
 }
 
 // Impure side-effects function.
-const showCleanImgs = (annotations: ImageAnnotation[], imgs: HTMLImageElement[]): ImageAnnotation[] => {
+const showCleanImgs = (annotations: SafeSearchAnnotation[], imgs: HTMLImageElement[]): SafeSearchAnnotation[] => {
   const passed = annotations.filter(a => isAnnotationSafe(a))
   const failed = annotations.filter(a => !isAnnotationSafe(a))
 
