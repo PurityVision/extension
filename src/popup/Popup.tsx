@@ -147,13 +147,15 @@ const Popup = (): JSX.Element => {
           return
         }
 
-        if (license.isValid) {
-          browser.storage.local.set({ license: licenseID })
-            .catch(err => console.log(err))
-        } else {
+        setLicenseValid(license.isValid)
+        setUsage(license.requestCount)
+
+        if (!license.isValid) {
           setInvalidLicenseError(license.validityReason)
         }
-        setLicenseValid(license.isValid)
+
+        browser.storage.local.set({ license: licenseID })
+          .catch(err => console.log(err))
       })
       .catch(err => {
         setLicenseValid(false)
