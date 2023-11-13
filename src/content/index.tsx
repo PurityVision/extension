@@ -31,7 +31,8 @@ const onLoad = (): void => {
             if (addedImgs.length === 0) {
               return
             }
-            void tryRunFilter({ images: addedImgs })
+            tryRunFilter({ images: addedImgs })
+              .catch(err => { console.log(err) })
           }
         }
       }

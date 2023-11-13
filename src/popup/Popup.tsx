@@ -198,7 +198,7 @@ const Popup = (): JSX.Element => {
               control={
                 <Switch
                   disabled={!licenseValid}
-                  checked={siteWhitelisted}
+                  checked={siteWhitelisted && licenseValid}
                   onChange={handleChangeSiteWhitelisted}
                 />
               }
